@@ -7,7 +7,7 @@ numpy.random.seed(297974)
 G = numpy.array(range(3, 40, 3))
 
 # 3: Barajear G
-G = numpy.random.choice(G, len(G), replace=False)
+G_barajeado = numpy.random.choice(G, len(G), replace=False)
 
 # 4: Sacar un arreglo H con 4 elementos de G seleccionados al azar sin reemplazo
 H = numpy.random.choice(G, 4, replace=False)
@@ -22,4 +22,4 @@ L_pares = numpy.sum(L % 2 == 0)
 M = numpy.random.uniform(3, 10, 100)
 
 # 8: Tirar la suma de los elementos de M que están en [5,8]
-M_suma = numpy.sum( M[(M>=5) and (M<=8)] )
+M_suma = numpy.sum( M[(M>=5) & (M<=8)] )
