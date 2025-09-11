@@ -1,5 +1,4 @@
 import numpy
-import json
 
 # 1: Generar una matriz Q de 5 x 5 con elementos aleatorios en [1, 10)
 Q = numpy.reshape(numpy.random.uniform(1, 10, 25), (5,5), "C")
