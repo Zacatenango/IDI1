@@ -11,6 +11,10 @@
 # Ante esto, vamos a pensar lateralmente y pensar: vamos a revisar una muestra, pero las muestras
 # las vamos a tomar inteligentemente.
 
+# Para la tarea: nuestra configuración va a ser una permutación de ciudades visitadas, la función de
+# configuración cercana es intercambiar 2 ciudades de la secuencia, y la función de energía es la
+# sumatoria de las distancias.
+
 import numpy
 import math
 
