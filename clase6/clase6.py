@@ -20,31 +20,31 @@ import math
 
 
 class Settings():
-    def __init__(self):
-        self.T_INICIAL = 100
-        self.T_FINAL = 0
+   def __init__(self):
+      self.T_INICIAL = 100
+      self.T_FINAL = 0
 
 class Configuracion():
 
-    campo = 0
+   campo = 0
 
-    def __init__(self, C=None):
-        if C is not None:
-            self.campo = C.campo
+   def __init__(self, C=None):
+      if C is not None:
+         self.campo = C.campo
 
-    def alterar_tantito_campo(self, campo):
-        pass
+   def alterar_tantito_campo(self, campo):
+      pass
 
-    def configuracion_cercana(self, C):
-        Cprima = Configuracion(C)
-        Cprima.alterar_tantito_campo()
-        return Cprima
+   def configuracion_cercana(self, C):
+      Cprima = Configuracion(C)
+      Cprima.alterar_tantito_campo()
+      return Cprima
 
-    def energia(self):
-        return 0 # sacar una "energía"
+   def energia(self):
+      return 0 # sacar una "energía"
 
 def funcion_de_templado(T0, t):
-    return T0 / (1+t)
+   return T0 / (1+t)
 
 settings = Settings()
 C = Configuracion()
@@ -53,18 +53,19 @@ t = 0
 n = 1000
 
 while True:
-    for X in range(n):
-        Cprima = C.configuracion_cercana()
-        delta_E = Cprima.energia() - C.energia()
-        # Pr(quedarnos con Cprima) -- función de Boltzmann
-        q = math.e**(-delta_E / T)
-        p = numpy.random.uniform(0, 1, 1)
-        if p < q:
-            C = Cprima
-    t += 1
-    T = funcion_de_templado(settings.T_INICIAL, t)
-    if T < settings.T_FINAL:
-        break
+   for X in range(n):
+      Cprima = C.configuracion_cercana()
+      delta_E = Cprima.energia() - C.energia()
+      # Pr(quedarnos con Cprima) -- función de Boltzmann
+      q = math.e**(-delta_E / T)
+      p = numpy.random.uniform(0, 1, 1)
+      if p < q:
+         C = Cprima
+   t += 1
+   T = funcion_de_templado(settings.T_INICIAL, t)
+   if T < settings.T_FINAL:
+      break
+
 
 
 """
