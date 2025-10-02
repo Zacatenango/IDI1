@@ -15,7 +15,7 @@ distancias = pandas.read_excel("20_ubicaciones.xlsx", sheet_name="20c_test", ind
 SETTS = \
 {
    "T_inicial": 10000,
-   "T_final": 0.1,
+   "T_final": 1,
    "n": 100
 }
 
@@ -24,8 +24,8 @@ SETTS = \
 def Ln(x):
    return numpy.log(x)
 def func_templado(T0, t):
-   #return T0 / (1+t)
-   return T0 / Ln(1+t)
+   return T0 / (1+t)
+   #return T0 / Ln(1+t)
    #return T0 * (0.95**t)
 
 
@@ -78,37 +78,40 @@ class Configuracion():
 
 
 # Ahora estoy listo para correr el templado simulado
-T = SETTS["T_inicial"]
-t = 0
-n = SETTS["n"]
-historial_enfriamiento = []
-iters = 0
-C = Configuracion()
-C.barajear_secuencia()
+def unhilo_templado_simulado():
+   T = SETTS["T_inicial"]
+   t = 0
+   n = SETTS["n"]
+   historial_enfriamiento = []
+   iters = 0
+   C = Configuracion()
+   C.barajear_secuencia()
 
+   while T > SETTS["T_final"]:
+      for X in range(n):
+         Cprima = C.sacar_configuracion_cercana()
+         delta_E = Cprima.energia() - C.energia()
+         q = math.exp(-delta_E / T)
+         p = numpy.random.random()
+         if delta_E < 0 or p < q:
+            C = Cprima
+      t += 1
+      T = func_templado(SETTS["T_inicial"], t)
+      iters += 1
+      historial_enfriamiento.append(C.energia())
+      """ if (iters % 100 == 0):
+         print(f"Van {iters} iteraciones...") """
+      # Tope máximo de 5000 iteraciones
+      if iters > 5000:
+         break
+   
+   return { "secuencia_final": C.secuencia, "distancia_final": C.energia(), "iteraciones": iters }
 
-while T > SETTS["T_final"]:
-   for X in range(n):
-      Cprima = C.sacar_configuracion_cercana()
-      delta_E = Cprima.energia() - C.energia()
-      q = math.exp(-delta_E / T)
-      p = numpy.random.random()
-      if delta_E < 0 or p < q:
-         C = Cprima
-   t += 1
-   T = func_templado(SETTS["T_inicial"], t)
-   iters += 1
-   historial_enfriamiento.append(C.energia())
-   if (iters % 100 == 0):
-      print(f"Van {iters} iteraciones...")
-   # Tope máximo de 5000 iteraciones
-   if iters > 5000:
-      break
+# Repito eso 22 veces (una por cada core de mi PC) 
+resultaos = []
 
-# Terminado el proceso, obtengo mi secuencia, saco su energía, y grafico mi historial
-# de enfriamiento
-print(f"La secuencia final es {json.dumps(C.secuencia)}")
-print(f"Su distancia es {C.energia()}")
-print(f"Iteraciones totales: {iters}")
-pyplot.plot(historial_enfriamiento)
-pyplot.show()
+# Al terminar, saco el valor mínimo y la desviación estándar
+arr_distancias_finales = numpy.array([un_resultao["distancia_final"] for un_resultao in resultaos])
+desvstd = arr_distancias_finales.std()
+minimo = arr_distancias_finales.min()
+print(f"Repetido 22 veces, la distancia mínima es {minimo} y la desviación estándar es {desvstd}")
