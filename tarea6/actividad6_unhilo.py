@@ -3,7 +3,6 @@ import numpy
 import math
 import json
 import matplotlib.pyplot as pyplot
-import multiprocessing
 
 # Planteamiento del problema:
 # Resolver con templado simulado el Problema del Vendedor Viajero con 820
@@ -100,19 +99,18 @@ def unhilo_templado_simulado():
       T = func_templado(SETTS["T_inicial"], t)
       iters += 1
       historial_enfriamiento.append(C.energia())
+      if (iters % 100 == 0):
+         print(f"Van {iters} iteraciones...")
       # Tope máximo de 5000 iteraciones
       if iters > 5000:
          break
    
    return { "secuencia_final": C.secuencia, "distancia_final": C.energia(), "iteraciones": iters }
 
-# Repito eso 22 veces (una por cada core de mi PC)
-# Por cómo funciona multiprocessing, aquí es obligatorio usar if __name__ == "__main__"
-if __name__ == "__main__":
-   with multiprocessing.Pool(processes=22) as pool_de_hilos:
-      resultaos = pool_de_hilos.map(lambda x: unhilo_templado_simulado(), range(22))
-   # Al terminar, saco el valor mínimo y la desviación estándar
-   arr_distancias_finales = numpy.array([un_resultao["distancia_final"] for un_resultao in resultaos])
-   desvstd = arr_distancias_finales.std()
-   minimo = arr_distancias_finales.min()
-   print(f"Repetido 22 veces, la distancia mínima es {minimo} y la desviación estándar es {desvstd}")
+resultaos = [ unhilo_templado_simulado() ]
+
+# Al terminar, saco el valor mínimo y la desviación estándar
+arr_distancias_finales = numpy.array([un_resultao["distancia_final"] for un_resultao in resultaos])
+desvstd = arr_distancias_finales.std()
+minimo = arr_distancias_finales.min()
+print(f"Repetido 22 veces, la distancia mínima es {minimo} y la desviación estándar es {desvstd}")
