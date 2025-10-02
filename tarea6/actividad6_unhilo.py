@@ -105,7 +105,7 @@ def unhilo_templado_simulado():
       if iters > 5000:
          break
    
-   return { "secuencia_final": C.secuencia, "distancia_final": C.energia(), "iteraciones": iters }
+   return { "secuencia_final": C.secuencia, "distancia_final": C.energia(), "iteraciones": iters, "historial": historial_enfriamiento }
 
 resultaos = [ unhilo_templado_simulado() ]
 

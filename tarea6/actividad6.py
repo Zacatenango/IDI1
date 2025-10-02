@@ -15,9 +15,9 @@ distancias = pandas.read_excel("20_ubicaciones.xlsx", sheet_name="20c_test", ind
 # Ajustes del programa, organizados en un diccionario de ajustes
 SETTS = \
 {
-   "T_inicial": 10000,
-   "T_final": 1,
-   "n": 100
+   "T_inicial": 500,
+   "T_final": 0.1,
+   "n": 1000
 }
 
 # Definimos una función de templado
@@ -25,9 +25,9 @@ SETTS = \
 def Ln(x):
    return numpy.log(x)
 def func_templado(T0, t):
-   return T0 / (1+t)
+   #return T0 / (1+t)
    #return T0 / Ln(1+t)
-   #return T0 * (0.95**t)
+   return T0 * (0.95**t)
 
 
 
@@ -79,7 +79,8 @@ class Configuracion():
 
 
 # Ahora estoy listo para correr el templado simulado
-def unhilo_templado_simulado():
+# (es obligatorio recibir un parámetro en funciones paralelizadas)
+def unhilo_templado_simulado(_):
    T = SETTS["T_inicial"]
    t = 0
    n = SETTS["n"]
@@ -104,15 +105,22 @@ def unhilo_templado_simulado():
       if iters > 5000:
          break
    
-   return { "secuencia_final": C.secuencia, "distancia_final": C.energia(), "iteraciones": iters }
+   return { "secuencia_final": C.secuencia, "distancia_final": C.energia(), "iteraciones": iters, "historial": historial_enfriamiento }
+   #return { "secuencia_final": C.secuencia, "distancia_final": C.energia(), "iteraciones": iters }
+   #return { "distancia_final": C.energia(), "iteraciones": iters }
 
 # Repito eso 22 veces (una por cada core de mi PC)
 # Por cómo funciona multiprocessing, aquí es obligatorio usar if __name__ == "__main__"
 if __name__ == "__main__":
    with multiprocessing.Pool(processes=22) as pool_de_hilos:
-      resultaos = pool_de_hilos.map(lambda x: unhilo_templado_simulado(), range(22))
+      resultaos = pool_de_hilos.map(unhilo_templado_simulado, range(22))
    # Al terminar, saco el valor mínimo y la desviación estándar
    arr_distancias_finales = numpy.array([un_resultao["distancia_final"] for un_resultao in resultaos])
    desvstd = arr_distancias_finales.std()
    minimo = arr_distancias_finales.min()
    print(f"Repetido 22 veces, la distancia mínima es {minimo} y la desviación estándar es {desvstd}")
+   #print(f"Conjunto total de resultados: {json.dumps(resultaos, indent=3)}")
+
+   # Revisamos una de nuestras simulaciones para ver qué tal corre
+   pyplot.plot(resultaos[0]["historial"])
+   pyplot.show()
