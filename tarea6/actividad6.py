@@ -5,11 +5,11 @@ import json
 import matplotlib.pyplot as pyplot
 
 # Planteamiento del problema:
-# Resolver con templado simulado el Problema del Vendedor Viajero con 8 
+# Resolver con templado simulado el Problema del Vendedor Viajero con 820
 # ubicaciones, y la matriz de distancia en kilómetros ubicada en 
-# probasSimAnn.xlsx, en la hoja "8c"
-distancias = pandas.read_excel("probarSimAnn.xlsx", sheet_name="8c", index_col=0, nrows=9)
-#print(f"{distancias}\n")
+# 20_ubicaciones.xlsx, en la hoja 20c_test
+distancias = pandas.read_excel("20_ubicaciones.xlsx", sheet_name="20c_test", index_col=0, nrows=9)
+print(f"{distancias}\n")
 
 # Ajustes del programa, organizados en un diccionario de ajustes
 SETTS = \
@@ -20,6 +20,7 @@ SETTS = \
 }
 
 # Definimos una función de templado
+# (y un wrapper para el logaritmo natural porque log() no dice si es decimal o natural)
 def Ln(x):
    return numpy.log(x)
 def func_templado(T0, t):
@@ -31,8 +32,29 @@ def func_templado(T0, t):
 
 # Nuestra configuración estará encapsulada en una clase
 class Configuracion():
-   secuencia = [ "Tijuana", "Mérida", "GDL", "México", "León", "Monterrey", "Tapachula", "Chihuahua" ]
-   secuencia_optima_9524 = [ "Tijuana", "GDL", "León", "México", "Mérida", "Tapachula", "Monterrey", "Chihuahua" ]
+   secuencia = \
+   [
+      "Acatic",
+      "Acatlán de Juárez",
+      "Ahualulco de Mercado",
+      "Ahuatlán",
+      "Ahuisculco",
+      "Ajijic",
+      "Alista",
+      "Allende",
+      "Altus Bosques",
+      "Amacueca",
+      "Amatitán",
+      "Ameca",
+      "Antonio Escobedo",
+      "Arandas",
+      "Atacco",
+      "Atemajac de Brizuela",
+      "Atengo",
+      "Atenguillo",
+      "Atequiza",
+      "Atotonilco el Alto",
+   ]
 
    def barajear_secuencia(self):
       self.secuencia = numpy.random.choice(self.secuencia, len(self.secuencia), replace=False).tolist()
@@ -47,12 +69,9 @@ class Configuracion():
    
    def sacar_configuracion_cercana(self):
       config_nueva = Configuracion()
-      # Hay que asegurarnos de que la secuencia nueva sea una lista nueva y 
-      # virgen, no una referencia a la anterior
       config_nueva.secuencia = self.secuencia.copy()
       indice_1 = numpy.random.randint(0, len(config_nueva.secuencia))
       indice_2 = numpy.random.randint(0, len(config_nueva.secuencia))
-      # Intercambiamos 2 elementos al azar
       config_nueva.secuencia[indice_1], config_nueva.secuencia[indice_2] = \
          config_nueva.secuencia[indice_2], config_nueva.secuencia[indice_1]
       return config_nueva
@@ -80,6 +99,8 @@ while T > SETTS["T_final"]:
    T = func_templado(SETTS["T_inicial"], t)
    iters += 1
    historial_enfriamiento.append(C.energia())
+   if (iters % 10 == 0):
+      print(f"Van {iters} iteraciones...")
 
 # Terminado el proceso, obtengo mi secuencia, saco su energía, y grafico mi historial
 # de enfriamiento
