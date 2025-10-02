@@ -8,8 +8,8 @@ import matplotlib.pyplot as pyplot
 # Resolver con templado simulado el Problema del Vendedor Viajero con 820
 # ubicaciones, y la matriz de distancia en kilómetros ubicada en 
 # 20_ubicaciones.xlsx, en la hoja 20c_test
-distancias = pandas.read_excel("20_ubicaciones.xlsx", sheet_name="20c_test", index_col=0, nrows=9)
-print(f"{distancias}\n")
+distancias = pandas.read_excel("20_ubicaciones.xlsx", sheet_name="20c_test", index_col=0, nrows=21)
+#print(f"{distancias}\n")
 
 # Ajustes del programa, organizados en un diccionario de ajustes
 SETTS = \
@@ -25,8 +25,8 @@ def Ln(x):
    return numpy.log(x)
 def func_templado(T0, t):
    #return T0 / (1+t)
-   #return T0 / Ln(1+t)
-   return T0 * (0.95**t)
+   return T0 / Ln(1+t)
+   #return T0 * (0.95**t)
 
 
 
@@ -99,8 +99,11 @@ while T > SETTS["T_final"]:
    T = func_templado(SETTS["T_inicial"], t)
    iters += 1
    historial_enfriamiento.append(C.energia())
-   if (iters % 10 == 0):
+   if (iters % 100 == 0):
       print(f"Van {iters} iteraciones...")
+   # Tope máximo de 5000 iteraciones
+   if iters > 5000:
+      break
 
 # Terminado el proceso, obtengo mi secuencia, saco su energía, y grafico mi historial
 # de enfriamiento
