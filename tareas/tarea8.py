@@ -1,6 +1,5 @@
 import json
 
-
 class Pila:
    def __init__(self, capacidad=100):
       self.data = []
@@ -29,22 +28,16 @@ class Pila:
       return json.dumps(self.data)
 
 
-pila1 = Pila(50)
-for X in range(1, 50, 2):
-   pila1.push(X)
-print(f"Stack: {pila1.print()}")
-
-
 class Cola:
    def __init__(self, capacidad=100):
       self.data = []
       self.capacity = capacidad
    
    def enqueue(self, dato):
-      self.data.insert(0, dato)
+      self.data.append(dato)
    
    def dequeue(self):
-      return self.data.pop()
+      return self.data.pop(0)
 
    def peek(self):
       return self.data[0]
@@ -61,6 +54,10 @@ class Cola:
    def print(self):
       return json.dumps(self.data)
    
+pila1 = Pila(50)
+for X in range(1, 50, 2):
+   pila1.push(X)
+print(f"Stack: {pila1.print()}")
 
 cola1 = Cola(50)
 while not pila1.empty():
