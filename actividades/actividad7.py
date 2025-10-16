@@ -44,6 +44,33 @@
 #    cola.queue(elemento.hijo2)
 
 
+class Cola:
+   def __init__(self, capacidad=100):
+      self.data = []
+      self.capacity = capacidad
+   
+   def enqueue(self, dato):
+      self.data.append(dato)
+   
+   def dequeue(self):
+      return self.data.pop(0)
+
+   def peek(self):
+      return self.data[0]
+   
+   def empty(self):
+      return len(self.data) == 0
+   
+   def full(self):
+      return len(self.data) == self.capacity
+   
+   def count(self):
+      return len(self.data)
+   
+   def print(self):
+      return json.dumps(self.data)
+
+
 class Nodo:
    def __init__(self, dato):
       self.dato = dato
@@ -67,6 +94,33 @@ class Nodo:
          cuenta += self.der.impares_P()
       return cuenta
 
+   # Lectura por amplitud
+   def existe(self, quien):
+      cola_auxiliar = Cola()
+      cola_auxiliar.enqueue(self)
+      while (not cola_auxiliar.empty()):
+         elemento_actual = cola_auxiliar.dequeue()
+         if elemento_actual.dato == quien:
+            return True
+         if elemento_actual.izq is not None:
+            cola_auxiliar.enqueue(elemento_actual.izq)
+         if elemento_actual.der is not None:
+            cola_auxiliar.enqueue(elemento_actual.der)
+      return False
+   
+   def suma_amplitud(self):
+      cola_auxiliar = Cola()
+      cola_auxiliar.enqueue(self)
+      sumatoria = 0
+      while (not cola_auxiliar.empty()):
+         elemento_actual = cola_auxiliar.dequeue()
+         sumatoria += elemento_actual.dato
+         if elemento_actual.izq is not None:
+            cola_auxiliar.enqueue(elemento_actual.izq)
+         if elemento_actual.der is not None:
+            cola_auxiliar.enqueue(elemento_actual.der)
+      return sumatoria
+
 
 raiz = Nodo(2)
 raiz.izq = Nodo(5)
@@ -78,3 +132,5 @@ raiz.der.der = Nodo(6)
 
 raiz.imprimir_P()
 print(f"Cuenta de impares: {raiz.impares_P()}")
+print(f"¿Hay 4? {raiz.existe(4)}")
+print(f"Sumatoria: {raiz.suma_amplitud()}")
