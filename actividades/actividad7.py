@@ -111,15 +111,39 @@ class Nodo:
    def suma_amplitud(self):
       cola_auxiliar = Cola()
       cola_auxiliar.enqueue(self)
+
       sumatoria = 0
+
       while (not cola_auxiliar.empty()):
          elemento_actual = cola_auxiliar.dequeue()
+
          sumatoria += elemento_actual.dato
+
          if elemento_actual.izq is not None:
             cola_auxiliar.enqueue(elemento_actual.izq)
          if elemento_actual.der is not None:
             cola_auxiliar.enqueue(elemento_actual.der)
       return sumatoria
+   
+
+   def maximo(self):
+      cola_auxiliar = Cola()
+      cola_auxiliar.enqueue(self)
+
+      maximo = 0
+
+      while (not cola_auxiliar.empty()):
+         elemento_actual = cola_auxiliar.dequeue()
+
+         if elemento_actual.dato > maximo:
+            maximo = elemento_actual.dato
+         
+         if elemento_actual.izq is not None:
+            cola_auxiliar.enqueue(elemento_actual.izq)
+         if elemento_actual.der is not None:
+            cola_auxiliar.enqueue(elemento_actual.der)
+      return maximo
+
 
 
 raiz = Nodo(2)
@@ -129,8 +153,10 @@ raiz.izq.izq = Nodo(1)
 raiz.izq.der = Nodo(4)
 raiz.der.izq = Nodo(3)
 raiz.der.der = Nodo(6)
+raiz.der.der.izq = Nodo(5000)
 
 raiz.imprimir_P()
 print(f"Cuenta de impares: {raiz.impares_P()}")
 print(f"¿Hay 4? {raiz.existe(4)}")
 print(f"Sumatoria: {raiz.suma_amplitud()}")
+print(f"Máximo: {raiz.maximo()}")
