@@ -5,21 +5,7 @@ class Nodo:
       self.der = der
 
 
-raiz = Nodo(0)
-raiz.izq = Nodo(4)
-raiz.der = Nodo(9)
-raiz.izq.izq = Nodo(5)
-raiz.izq.der = Nodo(2)
-raiz.der.izq = Nodo(1)
-raiz.der.der = Nodo(-3)
-raiz.izq.izq.izq = Nodo(7)
-raiz.izq.izq.der = Nodo(3)
-raiz.izq.der.izq = Nodo(4)
-raiz.izq.der.der = Nodo(1)
-raiz.der.izq.izq = Nodo(10)
-raiz.der.izq.der = Nodo(2)
-raiz.der.der.izq = Nodo(1)
-raiz.der.der.der = Nodo(8)
+
 
 
 def minimax_ingenuo(nodo, profundidad, es_max):
@@ -79,64 +65,33 @@ def minimax_ingenuo(nodo, profundidad, es_max):
       return { "valor": valor_min, "nodo": mejor_hoja, "costado": mejor_costado }
 
 
-# Example usage with the provided tree
-tree_json = {
-   "value": 0,
-   "left": {
-      "value": 4,
-      "left": {
-         "value": 5,
-         "left": 7,
-         "right": 3
-      },
-      "right": {
-         "value": 2,
-         "left": 4,
-         "right": 1
-      }
-   },
-   "right": {
-      "value": 9,
-      "left": {
-         "value": 1,
-         "left": 10,
-         "right": 2
-      },
-      "right": {
-         "value": -3,
-         "left": 1,
-         "right": 8
-      }
-   }
-}
+# Aplicamos la función a un árbol de 4 niveles
+raiz = Nodo(0)
+raiz.izq = Nodo(4)
+raiz.der = Nodo(9)
+raiz.izq.izq = Nodo(5)
+raiz.izq.der = Nodo(2)
+raiz.der.izq = Nodo(1)
+raiz.der.der = Nodo(-3)
+raiz.izq.izq.izq = Nodo(7)
+raiz.izq.izq.der = Nodo(3)
+raiz.izq.der.izq = Nodo(4)
+raiz.izq.der.der = Nodo(1)
+raiz.der.izq.izq = Nodo(10)
+raiz.der.izq.der = Nodo(2)
+raiz.der.der.izq = Nodo(1)
+raiz.der.der.der = Nodo(8)
 
-# Build the tree
-root = TreeNode.from_dict(tree_json)
+print("----------------------------------- Parte 1: minimax ingenuo -----------------------------------")
+resultao_max = minimax_ingenuo(raiz, 4, es_max=True)
+resultao_min = minimax_ingenuo(raiz, 4, es_max=False)
+print(f"Si la raíz es max, el valor final es {resultao_max['valor']}, la hoja es de valor {resultao_max['nodo'].valor}, y el costado es el {resultao_max['costado']}")
+print(f"Si la raíz es min, el valor final es {resultao_min['valor']}, la hoja es de valor {resultao_min['nodo'].valor}, y el costado es el {resultao_min['costado']}")
 
-# Test cases
-print("=" * 60)
-print("Testing with 4 levels:")
-print("=" * 60)
-
-# 4 levels, root is MAX
-value, leaf, side = de_minimis(root, 4, True)
-print(f"Root is MAX: value={value}, leaf_value={leaf.value}, side={side}")
-
-# 4 levels, root is MIN
-value, leaf, side = de_minimis(root, 4, False)
-print(f"Root is MIN: value={value}, leaf_value={leaf.value}, side={side}")
-
-print("\n" + "=" * 60)
-print("Testing with 3 levels:")
-print("=" * 60)
-
-# 3 levels, root is MAX
-value, leaf, side = de_minimis(root, 3, True)
-print(f"Root is MAX: value={value}, leaf_value={leaf.value}, side={side}")
-
-# 3 levels, root is MIN
-value, leaf, side = de_minimis(root, 3, False)
-print(f"Root is MIN: value={value}, leaf_value={leaf.value}, side={side}")
+resultao_max = minimax_ingenuo(raiz, 3, es_max=True)
+resultao_min = minimax_ingenuo(raiz, 3, es_max=False)
+print(f"3 niveles: si la raíz es max, el valor final es {resultao_max['valor']}, la hoja es de valor {resultao_max['nodo'].valor}, y el costado es el {resultao_max['costado']}")
+print(f"3 niveles: si la raíz es min, el valor final es {resultao_min['valor']}, la hoja es de valor {resultao_min['nodo'].valor}, y el costado es el {resultao_min['costado']}")
 
 
 
