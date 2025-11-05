@@ -1,89 +1,82 @@
-import json
-
-class TreeNode:
-    """Represents a node in the binary tree"""
-    def __init__(self, value, left=None, right=None):
-        self.value = value
-        self.left = left
-        self.right = right
-    
-    @classmethod
-    def from_dict(cls, data):
-        """Construct a tree from a dictionary/JSON structure"""
-        if data is None:
-            return None
-        if isinstance(data, (int, float)):
-            # Leaf node
-            return cls(data)
-        
-        value = data['value']
-        left = cls.from_dict(data.get('left'))
-        right = cls.from_dict(data.get('right'))
-        return cls(value, left, right)
+class Nodo:
+   def __init__(self, valor, izq=None, der=None):
+      self.valor = valor
+      self.izq = izq
+      self.der = der
 
 
-def minimax(node, depth, is_max_node):
-    """
-    Minimax algorithm implementation
-    
-    Args:
-        node: Current tree node
-        depth: Number of levels remaining to analyze
-        is_max_node: True if current node is a MAX node, False for MIN node
-    
-    Returns:
-        tuple: (best_value, best_leaf_node, side)
-            - best_value: The minimax value
-            - best_leaf_node: The leaf node chosen by the algorithm
-            - side: 'left' or 'right' indicating which side of root the leaf is on
-    """
-    # Base case: reached target depth or leaf node
-    if depth == 1 or (node.left is None and node.right is None):
-        return (node.value, node, None)
-    
-    if is_max_node:
-        # MAX node: choose maximum of children
-        max_value = float('-inf')
-        best_leaf = None
-        best_side = None
-        
-        if node.left is not None:
-            left_value, left_leaf, _ = minimax(node.left, depth - 1, False)
-            if left_value > max_value:
-                max_value = left_value
-                best_leaf = left_leaf
-                best_side = 'left'
-        
-        if node.right is not None:
-            right_value, right_leaf, _ = minimax(node.right, depth - 1, False)
-            if right_value > max_value:
-                max_value = right_value
-                best_leaf = right_leaf
-                best_side = 'right'
-        
-        return (max_value, best_leaf, best_side)
-    
-    else:
-        # MIN node: choose minimum of children
-        min_value = float('inf')
-        best_leaf = None
-        best_side = None
-        
-        if node.left is not None:
-            left_value, left_leaf, _ = minimax(node.left, depth - 1, True)
-            if left_value < min_value:
-                min_value = left_value
-                best_leaf = left_leaf
-                best_side = 'left'
-        
-        if node.right is not None:
-            right_value, right_leaf, _ = minimax(node.right, depth - 1, True)
-            if right_value < min_value:
-                min_value = right_value
-                best_leaf = right_leaf
-                best_side = 'right'
-        
-        return (min_value, best_leaf, best_side)
+raiz = Nodo(0)
+raiz.izq = Nodo(4)
+raiz.der = Nodo(9)
+raiz.izq.izq = Nodo(5)
+raiz.izq.der = Nodo(2)
+raiz.der.izq = Nodo(1)
+raiz.der.der = Nodo(-3)
+raiz.izq.izq.izq = Nodo(7)
+raiz.izq.izq.der = Nodo(3)
+raiz.izq.der.izq = Nodo(4)
+raiz.izq.der.der = Nodo(1)
+raiz.der.izq.izq = Nodo(10)
+raiz.der.izq.der = Nodo(2)
+raiz.der.der.izq = Nodo(1)
+raiz.der.der.der = Nodo(8)
+
+
+def minimax_ingenuo(nodo, profundidad, es_max):
+   # Condición de salida: llegamos a la profundidad final o a una hoja
+   if profundidad == 1 or (nodo.izq is None and nodo.der is None):
+      return { "valor": nodo.valor, "nodo": nodo, "costado": None }
+   
+   # El nodo inicial es max: elegimos los hijos máximos
+   if es_max:
+      # Inicializamos nuestro valor máximo en una representación de Python del -infinito
+      valor_max = float("-inf")
+      mejor_hoja = None
+      mejor_costado = None
+
+      # Si hay nodo a la izquierda, llamamos recursivamente la función en ese nodo, con la 
+      # profundidad decrementada; y ponemos que es Min, porque el hijo de un Max es Min.
+      if nodo.izq is not None:
+         resultao = minimax_ingenuo(nodo.izq, profundidad-1, es_max=False)
+         # Terminando nuestra rama de recursividad, si nuestro valor es mayor que el 
+         # valor máximo, ponemos eso en las variables del resultado e indicamos que el mejor costado
+         # a seguir es el izquierdo
+         if resultao["valor"] > valor_max:
+            valor_max = resultao["valor"]
+            mejor_hoja = resultao["nodo"]
+            mejor_costado = "izquierdo"
+      
+      # Ahora, si hay nodo a la derecha, pasamos a revisarlo, igual con la profundidad decrementada
+      # Y hacemos lo mismo que con el nodo izquierdo pero indicando que es a la derecha.
+      if nodo.der is not None:
+         resultao = minimax_ingenuo(nodo.der, profundidad-1, es_max=False)
+         if resultao["valor"] > valor_max:
+            valor_max = resultao["valor"]
+            mejor_hoja = resultao["nodo"]
+            mejor_costado = "derecho"
+      
+      # Terminada esta cadena de recursión, tiramos el resultado
+      return { "valor": valor_max, "nodo": mejor_hoja, "costado": mejor_costado }
+   
+   # Ahora, si el nodo es min, hacemos lo mismo pero buscando un valor mínimo
+   else:
+      valor_min = float("inf")
+      mejor_hoja = None
+      mejor_costado = None
+
+      if nodo.izq is not None:
+         resultao = minimax_ingenuo(nodo.izq, profundidad-1, es_max=True)
+         if resultao["valor"] < valor_min:
+            valor_min = resultao["valor"]
+            mejor_hoja = resultao["nodo"]
+            mejor_costado = "izquierdo"
+      if nodo.der is not None:
+         resultao = minimax_ingenuo(nodo.der, profundidad-1, es_max=True)
+         if resultao["valor"] < valor_min:
+            valor_min = resultao["valor"]
+            mejor_hoja = resultao["nodo"]
+            mejor_costado = "derecho"
+      return { "valor": valor_min, "nodo": mejor_hoja, "costado": mejor_costado }
 
 
 # Example usage with the provided tree
@@ -126,11 +119,11 @@ print("Testing with 4 levels:")
 print("=" * 60)
 
 # 4 levels, root is MAX
-value, leaf, side = minimax(root, 4, True)
+value, leaf, side = de_minimis(root, 4, True)
 print(f"Root is MAX: value={value}, leaf_value={leaf.value}, side={side}")
 
 # 4 levels, root is MIN
-value, leaf, side = minimax(root, 4, False)
+value, leaf, side = de_minimis(root, 4, False)
 print(f"Root is MIN: value={value}, leaf_value={leaf.value}, side={side}")
 
 print("\n" + "=" * 60)
@@ -138,11 +131,11 @@ print("Testing with 3 levels:")
 print("=" * 60)
 
 # 3 levels, root is MAX
-value, leaf, side = minimax(root, 3, True)
+value, leaf, side = de_minimis(root, 3, True)
 print(f"Root is MAX: value={value}, leaf_value={leaf.value}, side={side}")
 
 # 3 levels, root is MIN
-value, leaf, side = minimax(root, 3, False)
+value, leaf, side = de_minimis(root, 3, False)
 print(f"Root is MIN: value={value}, leaf_value={leaf.value}, side={side}")
 
 
