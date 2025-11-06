@@ -101,7 +101,6 @@ class Nodo():
       self.der = der
 
 
-# TODO hacer que el minimax con poda tire el costado a seguir
 def minimax_poda_alfabeta(nodo, profundidad, alfa, beta, es_max):
 
    # Condición de salida: llegamos a una hoja o a la profundidad final
