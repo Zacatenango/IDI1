@@ -94,7 +94,7 @@ print(f"3 niveles: si la raíz es min, el valor final es {resultao_min['valor']}
 
 
 # Parte 2: minimax con poda alfa-beta
-class Nodo_AlfaBeta():
+class Nodo():
    def __init__(self, valor, izq=None, der=None):
       self.valor = valor
       self.izq = izq
@@ -176,21 +176,21 @@ def minimax_poda_alfabeta(nodo, profundidad, alfa, beta, es_max, costado_raiz=No
 
 
 # Ahora probamos
-raiz = Nodo_AlfaBeta(0)
-raiz.izq = Nodo_AlfaBeta(0)
-raiz.der = Nodo_AlfaBeta(0)
-raiz.izq.izq = Nodo_AlfaBeta(0)
-raiz.izq.der = Nodo_AlfaBeta(0)
-raiz.der.izq = Nodo_AlfaBeta(0)
-raiz.der.der = Nodo_AlfaBeta(0)
-raiz.izq.izq.izq = Nodo_AlfaBeta(3)
-raiz.izq.izq.der = Nodo_AlfaBeta(5)
-raiz.izq.der.izq = Nodo_AlfaBeta(6)
-raiz.izq.der.der = Nodo_AlfaBeta(9)
-raiz.der.izq.izq = Nodo_AlfaBeta(1)
-raiz.der.izq.der = Nodo_AlfaBeta(2)
-raiz.der.der.izq = Nodo_AlfaBeta(0)
-raiz.der.der.der = Nodo_AlfaBeta(-1)
+raiz = Nodo(0)
+raiz.izq = Nodo(0)
+raiz.der = Nodo(0)
+raiz.izq.izq = Nodo(0)
+raiz.izq.der = Nodo(0)
+raiz.der.izq = Nodo(0)
+raiz.der.der = Nodo(0)
+raiz.izq.izq.izq = Nodo(3)
+raiz.izq.izq.der = Nodo(5)
+raiz.izq.der.izq = Nodo(6)
+raiz.izq.der.der = Nodo(9)
+raiz.der.izq.izq = Nodo(1)
+raiz.der.izq.der = Nodo(2)
+raiz.der.der.izq = Nodo(0)
+raiz.der.der.der = Nodo(-1)
 
 
 print("----------------------------------- Parte 2: minimax con poda alfa-beta -----------------------------------")
