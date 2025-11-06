@@ -175,31 +175,6 @@ def minimax_poda_alfabeta(nodo, profundidad, alfa, beta, es_max, costado_raiz=No
       return { "valor": valor_max, "nodo": mejor_hoja, "costado_raiz": mejor_costado }
 
 
-class TreeNode:
-    """Represents a node in the binary tree"""
-    def __init__(self, value=None, left=None, right=None, color=None):
-        self.value = value
-        self.left = left
-        self.right = right
-        self.color = color
-        self.visited = False  # Track if node was visited during algorithm
-    
-    @classmethod
-    def from_dict(cls, data):
-        """Construct a tree from a dictionary/JSON structure"""
-        if data is None:
-            return None
-        if isinstance(data, (int, float)):
-            # Leaf node with just a value
-            return cls(value=data)
-        
-        value = data.get('value')
-        color = data.get('color')
-        left = cls.from_dict(data.get('left'))
-        right = cls.from_dict(data.get('right'))
-        return cls(value, left, right, color)
-
-
 # Ahora probamos
 raiz = Nodo_AlfaBeta(0)
 raiz.izq = Nodo_AlfaBeta(0)
