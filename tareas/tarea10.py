@@ -106,24 +106,26 @@ def minimax_poda_alfabeta(nodo, profundidad, alfa, beta, es_max):
 
    # Condición de salida: llegamos a una hoja o a la profundidad final
    if profundidad == 0 or (nodo.izq is None and nodo.der is None):
-      return { "valor": nodo.valor, "nodo": nodo }
+      return { "valor": nodo.valor, "nodo": nodo, "costado": None }
 
    # El nodo es max: elegimos el hijo máximo igual que en minimax normal
    if es_max:
       valor_max = float("-inf")
       mejor_hoja = None
+      mejor_costado = None
 
       if nodo.izq is not None:
          resultao = minimax_poda_alfabeta(nodo.izq, profundidad-1, alfa, beta, es_max=False)
          if resultao["valor"] > valor_max:
             valor_max = resultao["valor"]
             mejor_hoja = resultao["nodo"]
+            mejor_costado = "izquierdo"
          # Poda alfa-beta: alfa es igual a lo que sea mayor de entre la alfa existente y el valor max
          # Luego, si la beta es menor o igual a alfa, salgo de la función y con eso podo el subárbol
          # de la derecha
          alfa = max(alfa, valor_max)
          if beta <= alfa:
-            return { "valor": valor_max, "nodo": mejor_hoja }
+            return { "valor": valor_max, "nodo": mejor_hoja, "costado": mejor_costado }
       
       # No podé el costado derecho: lo evalúo
       if nodo.der is not None:
@@ -131,36 +133,41 @@ def minimax_poda_alfabeta(nodo, profundidad, alfa, beta, es_max):
          if resultao["valor"] > valor_max:
             valor_max = resultao["valor"]
             mejor_hoja = resultao["nodo"]
+            mejor_costado = "derecho"
          alfa = max(alfa, valor_max)
          # No reviso la beta porque ya no hay nada qué podar
       
       # Ya pasé por el último nodo, tiro el valor máximo
-      return { "valor": valor_max, "nodo": mejor_hoja }
+      return { "valor": valor_max, "nodo": mejor_hoja, "costado": mejor_costado }
    
    # El nodo es min:
    else:
       valor_min = float("inf")
       mejor_hoja = None
+      mejor_costado = None
+
       if nodo.izq is not None:
          resultao = minimax_poda_alfabeta(nodo.izq, profundidad-1, alfa, beta, es_max=True)
          if resultao["valor"] < valor_min:
             valor_min = resultao["valor"]
             mejor_hoja = resultao["nodo"]
+            mejor_costado = "izquierdo"
          # Poda alfa-beta: beta es igual a lo menor de entre la beta existente y el valor min
          # Si la beta es menor o igual a alfa, podo el subárbol de la derecha saliendo de la función
          beta = min(beta, valor_min)
          if beta <= alfa:
-            return { "valor": valor_min, "nodo": mejor_hoja }
+            return { "valor": valor_min, "nodo": mejor_hoja, "costado": mejor_costado }
       
       if nodo.der is not None:
          resultao = minimax_poda_alfabeta(nodo.der, profundidad-1, alfa, beta, es_max=True)
          if resultao["valor"] < valor_min:
             valor_min = resultao["valor"]
             mejor_hoja = resultao["nodo"]
+            mejor_costado = "derecho"
          beta = min(beta, valor_min)
          # No reviso la beta porque ya no hay nada qué podar
 
-      return { "valor": valor_min, "nodo": mejor_hoja }
+      return { "valor": valor_min, "nodo": mejor_hoja, "costado": mejor_costado }
 
 
 # Ahora probamos
@@ -183,4 +190,4 @@ raiz.der.der.der = Nodo(-1)
 
 print("----------------------------------- Parte 2: minimax con poda alfa-beta -----------------------------------")
 resultao_max = minimax_poda_alfabeta(raiz, 4, float("-inf"), float("inf"), es_max=True)
-print(f"Si la raíz es max, el valor final es {resultao_max['valor']}, la hoja es de valor {resultao_max['nodo'].valor}")
+print(f"Si la raíz es max, el valor final es {resultao_max['valor']}, la hoja es de valor {resultao_max['nodo'].valor}, y el costado es el {resultao_max['costado']}")
