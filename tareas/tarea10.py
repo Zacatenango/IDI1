@@ -121,10 +121,10 @@ def minimax_poda_alfabeta(nodo, profundidad, alfa, beta, es_max):
             mejor_costado = "izquierdo"
          # Poda alfa-beta: alfa es igual a lo que sea mayor de entre la alfa existente y el valor max
          # Luego, si la beta es menor o igual a alfa, salgo de la función y con eso podo el subárbol
-         # de la derecha
+         # de la derecha, tirando beta porque este nodo es max
          alfa = max(alfa, valor_max)
          if beta <= alfa:
-            return { "valor": valor_max, "nodo": mejor_hoja, "costado": mejor_costado }
+            return { "valor": beta, "nodo": mejor_hoja, "costado": mejor_costado }
       
       # No podé el costado derecho: lo evalúo
       if nodo.der is not None:
@@ -136,8 +136,8 @@ def minimax_poda_alfabeta(nodo, profundidad, alfa, beta, es_max):
          alfa = max(alfa, valor_max)
          # No reviso la beta porque ya no hay nada qué podar
       
-      # Ya pasé por el último nodo, tiro el valor máximo
-      return { "valor": valor_max, "nodo": mejor_hoja, "costado": mejor_costado }
+      # Ya pasé por el último nodo y estoy en un max, tiro alfa
+      return { "valor": alfa, "nodo": mejor_hoja, "costado": mejor_costado }
    
    # El nodo es min:
    else:
@@ -153,9 +153,10 @@ def minimax_poda_alfabeta(nodo, profundidad, alfa, beta, es_max):
             mejor_costado = "izquierdo"
          # Poda alfa-beta: beta es igual a lo menor de entre la beta existente y el valor min
          # Si la beta es menor o igual a alfa, podo el subárbol de la derecha saliendo de la función
+         # y tiro alfa porque estoy en un min
          beta = min(beta, valor_min)
          if beta <= alfa:
-            return { "valor": valor_min, "nodo": mejor_hoja, "costado": mejor_costado }
+            return { "valor": alfa, "nodo": mejor_hoja, "costado": mejor_costado }
       
       if nodo.der is not None:
          resultao = minimax_poda_alfabeta(nodo.der, profundidad-1, alfa, beta, es_max=True)
@@ -166,7 +167,8 @@ def minimax_poda_alfabeta(nodo, profundidad, alfa, beta, es_max):
          beta = min(beta, valor_min)
          # No reviso la beta porque ya no hay nada qué podar
 
-      return { "valor": valor_min, "nodo": mejor_hoja, "costado": mejor_costado }
+      # Agoté los nodos y soy min, tiro beta
+      return { "valor": beta, "nodo": mejor_hoja, "costado": mejor_costado }
 
 
 # Ahora probamos
