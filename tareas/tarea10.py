@@ -101,10 +101,11 @@ class Nodo():
       self.der = der
 
 
+# TODO hacer que el minimax con poda tire el costado a seguir
 def minimax_poda_alfabeta(nodo, profundidad, alfa, beta, es_max):
 
    # Condición de salida: llegamos a una hoja o a la profundidad final
-   if nodo.valor is not None or profundidad == 0:
+   if profundidad == 0 or (nodo.izq is None and nodo.der is None):
       return { "valor": nodo.valor, "nodo": nodo }
 
    # El nodo es max: elegimos el hijo máximo igual que en minimax normal
@@ -122,7 +123,7 @@ def minimax_poda_alfabeta(nodo, profundidad, alfa, beta, es_max):
          # de la derecha
          alfa = max(alfa, valor_max)
          if beta <= alfa:
-            return { "valor": beta, "nodo": mejor_hoja }
+            return { "valor": valor_max, "nodo": mejor_hoja }
       
       # No podé el costado derecho: lo evalúo
       if nodo.der is not None:
@@ -133,14 +134,13 @@ def minimax_poda_alfabeta(nodo, profundidad, alfa, beta, es_max):
          alfa = max(alfa, valor_max)
          # No reviso la beta porque ya no hay nada qué podar
       
-      # Ya pasé por el último nodo, tiro alfa
-      return { "valor": valor_max, "nodo": beta }
+      # Ya pasé por el último nodo, tiro el valor máximo
+      return { "valor": valor_max, "nodo": mejor_hoja }
    
    # El nodo es min:
    else:
       valor_min = float("inf")
       mejor_hoja = None
-      mejor_costado = None
       if nodo.izq is not None:
          resultao = minimax_poda_alfabeta(nodo.izq, profundidad-1, alfa, beta, es_max=True)
          if resultao["valor"] < valor_min:
@@ -150,7 +150,7 @@ def minimax_poda_alfabeta(nodo, profundidad, alfa, beta, es_max):
          # Si la beta es menor o igual a alfa, podo el subárbol de la derecha saliendo de la función
          beta = min(beta, valor_min)
          if beta <= alfa:
-            return { "valor": beta, "nodo": mejor_hoja }
+            return { "valor": valor_min, "nodo": mejor_hoja }
       
       if nodo.der is not None:
          resultao = minimax_poda_alfabeta(nodo.der, profundidad-1, alfa, beta, es_max=True)
@@ -160,7 +160,7 @@ def minimax_poda_alfabeta(nodo, profundidad, alfa, beta, es_max):
          beta = min(beta, valor_min)
          # No reviso la beta porque ya no hay nada qué podar
 
-      return { "valor": alfa, "nodo": mejor_hoja }
+      return { "valor": valor_min, "nodo": mejor_hoja }
 
 
 # Ahora probamos
