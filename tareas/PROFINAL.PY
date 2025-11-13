@@ -12,6 +12,7 @@ Usage: PROFINAL.PY [-x <dimension_x>] [-y <dimension_y>]
 import json
 import curses
 import numpy
+import time
 from docopt import docopt
 
 
@@ -26,9 +27,12 @@ class EstadoDelJuego():
       self.cuadricula = [ [] for _ in range(self.dimension_Y) ]
       for una_fila in self.cuadricula:
          for X in range(self.dimension_X):
-            una_fila.append({ "valor": numpy.random.randint(0, 10), "ocupado_por": None, "activo": False })
+            una_fila.append({ "valor": numpy.random.randint(0, 10), "ocupado_por": None })
       self.puntuacion_1 = 0
       self.puntuacion_2 = 0
+      self.posicion_P1 = (0,0)
+      self.posicion_P2 = (0,0)
+      self.turno_P1 = True
 
 
 # Este proyecto usa la librería curses para implementar la interfaz de usuario
@@ -36,6 +40,8 @@ def main(stdscr):
    # Configuramos curses: terminal a color, el color #1 es amarillo sobre negro,
    # #2 es blanco sobre negro, #3 es rojo sobre negro
    curses.start_color()
+   curses.cbreak()
+   curses.noecho()
    curses.init_pair(1, curses.COLOR_YELLOW, curses.COLOR_BLACK)
    curses.init_pair(2, curses.COLOR_WHITE, curses.COLOR_BLACK)
    curses.init_pair(3, curses.COLOR_RED, curses.COLOR_BLACK)
@@ -54,13 +60,21 @@ def main(stdscr):
    
    # Iniciando el programa, preparamos nuestra pantalla
    stdscr.clear()
-   stdscr.nodelay(False)
+   stdscr.nodelay(True)
+   stdscr.keypad(True)
+   stdscr.timeout(100)  # 100ms timeout for getch()
 
+   mensaje = ""
+   
    # Iniciamos el ciclo principal
    while True:
       # Renderizamos la cuadrícula
       stdscr.clear()
       stdscr.addstr(0, 0, f"Jugador 1: {estado_juego.puntuacion_1} puntos -- Jugador 2: {estado_juego.puntuacion_2} puntos")
+      
+      # Mostramos el mensaje de movimiento
+      if mensaje:
+         stdscr.addstr(1, 0, mensaje)
 
       for indice_Y, una_fila in enumerate(estado_juego.cuadricula):
          for indice_X, una_celda in enumerate(una_fila):
@@ -71,29 +85,29 @@ def main(stdscr):
                   color = colores["verde"]
                case _:
                   color = colores["blanco"]
-            if una_celda["activo"]: color = colores["rojo"]
-
             stdscr.addstr(indice_Y+2, indice_X * 2, str(una_celda["valor"]), color)
       
       stdscr.refresh()
-
+      
       # Recibir el teclazo
       tecla = stdscr.getch()
-      match tecla:
-         case curses.KEY_LEFT:
-            stdscr.addstr(1, 0, "Nos movemos a la izquierda")
-         case curses.KEY_RIGHT:
-            stdscr.addstr(1, 0, "Nos movemos a la derecha")
-         case curses.KEY_UP:
-            stdscr.addstr(1, 0, "Nos movemos arriba")
-         case curses.KEY_DOWN:
-            stdscr.addstr(1, 0, "Nos movemos abajo")
-         case ord("q"):
-            break
-         case ord("Q"):
-            break
-         case _:
-            stdscr.addstr(1, 0, "No hacemos nada")
+      
+      if tecla == ord("w"):
+         mensaje = "Nos movemos arriba"
+      elif tecla == ord("a"):
+         mensaje = "Nos movemos a la izquierda"
+      elif tecla == ord("s"):
+         mensaje = "Nos movemos abajo"
+      elif tecla == ord("d"):
+         mensaje = "Nos movemos a la derecha"
+      elif tecla == ord("q"):
+         break
+      elif tecla == -1:  # No key pressed (timeout)
+         mensaje = ""
+      
+      time.sleep(0.1)  # Small delay to keep message visible
+      
+      
 
 
 if __name__ == "__main__":
