@@ -53,4 +53,8 @@ H[H<30] = 0
 K = H
 
 # Tirar la cantidad de columnas de K cuya suma sea mayor de 500
+K_suma = K.sum(axis=1)
+print(f"Columnas de K cuya suma es mayor de 500: {len(K_suma[K_suma > 500])}")
 
+# Z = promedios de cada columna de K
+Z = K.mean(axis=1)
