@@ -6,18 +6,17 @@ import matplotlib.pyplot as pyplot
 import multiprocessing
 
 # Planteamiento del problema:
-# Resolver con templado simulado el Problema del Vendedor Viajero con 820
-# ubicaciones, y la matriz de distancia en kilómetros ubicada en 
-# 20_ubicaciones.xlsx, en la hoja 20c_test
-distancias = pandas.read_excel("20_ubicaciones.xlsx", sheet_name="20c_test", index_col=0, nrows=21)
-#print(f"{distancias}\n")
+# Resolver con templado simulado el Problema del Vendedor Viajero
+distancias = pandas.read_excel("SA2.xlsx", sheet_name="54c_test", index_col=0, nrows=55)
 
 # Ajustes del programa, organizados en un diccionario de ajustes
 SETTS = \
 {
    "T_inicial": 500,
    "T_final": 0.1,
-   "n": 1000
+   "n": 1000,
+   "hilos": 4,
+   "iteraciones": 4
 }
 
 # Definimos una función de templado
@@ -29,33 +28,13 @@ def func_templado(T0, t):
    #return T0 / Ln(1+t)
    return T0 * (0.95**t)
 
+# Cargamos una vez nuestra configuración inicial desde el documento de Excel
+secuencia_inicial = list(distancias.index)
 
 
 # Nuestra configuración estará encapsulada en una clase
 class Configuracion():
-   secuencia = \
-   [
-      "Acatic",
-      "Acatlán de Juárez",
-      "Ahualulco de Mercado",
-      "Ahuatlán",
-      "Ahuisculco",
-      "Ajijic",
-      "Alista",
-      "Allende",
-      "Altus Bosques",
-      "Amacueca",
-      "Amatitán",
-      "Ameca",
-      "Antonio Escobedo",
-      "Arandas",
-      "Atacco",
-      "Atemajac de Brizuela",
-      "Atengo",
-      "Atenguillo",
-      "Atequiza",
-      "Atotonilco el Alto",
-   ]
+   secuencia = secuencia_inicial
 
    def barajear_secuencia(self):
       self.secuencia = numpy.random.choice(self.secuencia, len(self.secuencia), replace=False).tolist()
@@ -106,17 +85,30 @@ def unhilo_templado_simulado(_):
          break """
    
    return { "secuencia_final": C.secuencia, "distancia_final": C.energia(), "iteraciones": iters, "historial": historial_enfriamiento }
-   #return { "secuencia_final": C.secuencia, "distancia_final": C.energia(), "iteraciones": iters }
-   #return { "distancia_final": C.energia(), "iteraciones": iters }
 
-# Repito eso 22 veces (una por cada core de mi PC)
+
+# Repito eso en paralelo, un cierto número de veces
 # Por cómo funciona multiprocessing, aquí es obligatorio usar if __name__ == "__main__"
 if __name__ == "__main__":
-   with multiprocessing.Pool(processes=22) as pool_de_hilos:
-      resultaos = pool_de_hilos.map(unhilo_templado_simulado, range(22))
-   # Al terminar, saco el valor mínimo y la desviación estándar
-   arr_distancias_finales = numpy.array([un_resultao["distancia_final"] for un_resultao in resultaos])
-   desvstd = arr_distancias_finales.std()
-   minimo = arr_distancias_finales.min()
-   print(f"Repetido 22 veces, la distancia mínima es {minimo} y la desviación estándar es {desvstd}")
-   #print(f"Conjunto total de resultados: {json.dumps(resultaos, indent=3)}")
+   for X in range(SETTS["iteraciones"]):
+      with multiprocessing.Pool(processes=SETTS["hilos"]) as pool_de_hilos:
+         resultaos = pool_de_hilos.map(unhilo_templado_simulado, range(SETTS["hilos"]))
+
+      # Al terminar, saco el valor mínimo y la desviación estándar
+      arr_distancias_finales = numpy.array([un_resultao["distancia_final"] for un_resultao in resultaos])
+      desvstd = arr_distancias_finales.std()
+      minimo = arr_distancias_finales.min()
+      print(f"Iteración {X+1}/{SETTS['iteraciones']}: con {SETTS['hilos']} hilos, la distancia mínima es {minimo} y la desviación estándar es {desvstd}")
+
+      # Diagnóstico: grafico un historial de enfriamiento
+      #pyplot.plot(resultaos[0]["historial"])
+      #pyplot.show()
+
+      # Imprimo los resultados de cada hilo
+      # (los resultados completos en un archivo)
+      with open(f"resultaos_{X}.json", w) as archivo_resultaos:
+         json.dump(resultaos, archivo_resultaos)
+      for un_resultao in resultaos:
+         un_resultao.pop("historial")
+         un_resultao.pop("secuencia_final")
+         print(f"Un resultado de la iteración {X}: {json.dumps(un_resultao)}")
