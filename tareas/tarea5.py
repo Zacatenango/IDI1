@@ -7,12 +7,12 @@ rng = np.random.default_rng()
 # "Aguja de Buffon". Sea L la longitud de la aguja y D la distancia entre líneas. Use N = 100,000
 # experimentos.
 N = 100000
-D = 1.0
+D = 1
 
 def experimento_buffon(L, D):
    x = rng.uniform(0, D / 2)
    theta = rng.uniform(0, math.pi / 2)
-   media_proyeccion = (L / 2.0) * math.sin(theta)
+   media_proyeccion = (L / 2) * math.sin(theta)
    return media_proyeccion >= x
 
 def Pr(L, D, N):
@@ -43,7 +43,7 @@ print(f"  Estimacion de pi desde P = {pi_estimado:.6f}")
 # Observamos que dividir la distancia entre líneas nos multiplica la estimación
 # de pi que obtenemos como resultado: dividimos entre 2, nuestro resultado es
 # prácticamente 2*pi.
-L = D / 2.0
+L = D / 2
 Pr_exito_caso2 = Pr(L, D, N)
 pi_estimado = 2 / Pr_exito_caso2
 print()
