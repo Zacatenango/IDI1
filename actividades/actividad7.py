@@ -42,7 +42,7 @@
 #    elemento = cola.dequeue()
 #    cola.queue(elemento.hijo1)
 #    cola.queue(elemento.hijo2)
-
+import json
 
 class Cola:
    def __init__(self, capacidad=100):
