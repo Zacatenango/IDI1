@@ -106,7 +106,7 @@ if __name__ == "__main__":
 
       # Imprimo los resultados de cada hilo
       # (los resultados completos en un archivo)
-      with open(f"resultaos_{X}.json", w) as archivo_resultaos:
+      with open(f"resultaos_{X}.json", "w") as archivo_resultaos:
          json.dump(resultaos, archivo_resultaos)
       for un_resultao in resultaos:
          un_resultao.pop("historial")
