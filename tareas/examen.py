@@ -235,10 +235,12 @@ def tirar_arbol(nodo, nivel=0, prefijo=""):
       tirar_arbol(nodo.izq, nivel + 1, "   ")
 
 raiz_examen = Nodo(96)
-generar_arbol_examen(raiz_examen, 4)
+generar_arbol_examen(raiz_examen, 3)
 tirar_arbol(raiz_examen)
-resultao_max = minimax_ingenuo(raiz_examen, 5, es_max=True)
-resultao_min = minimax_ingenuo(raiz_examen, 5, es_max=False)
+resultao_max = minimax_ingenuo(raiz_examen, 4, es_max=True)
+resultao_min = minimax_ingenuo(raiz_examen, 4, es_max=False)
+resultao_max_alfabeta = minimax_poda_alfabeta(raiz_examen, 4, float("-inf"), float("inf"), es_max=True)
+resultao_min_alfabeta = minimax_poda_alfabeta(raiz_examen, 4, float("-inf"), float("inf"), es_max=False)
 
 print(f"Minimax con raíz max: resultado {resultao_max['valor']}, costado {resultao_max['costado']}")
 print(f"Minimax con raíz min: resultado {resultao_min['valor']}, costado {resultao_min['costado']}")
