@@ -126,7 +126,6 @@ class Nodo():
 
 
 def minimax_poda_alfabeta(nodo, profundidad, alfa, beta, es_max):
-
    # Condición de salida: llegamos a una hoja o a la profundidad final
    if profundidad == 0 or (nodo.izq is None and nodo.der is None):
       return { "valor": nodo.valor, "nodo": nodo, "costado": None }
@@ -222,12 +221,24 @@ print("----------------------------------- Examen ------------------------------
 # Generamos un árbol binario de N niveles con raíz positiva. Si un nodo tiene como dato un valor X<4,
 # no se le generan hijos; si sí, su hijo izquierdo vale int(X/2), y el derecho, int(X/3). Generar
 # un árbol de N=4 niveles y M=96.
-def generar_arbol_examen(nodo):
-   if nodo.valor > 4:
+def generar_arbol_examen(nodo, niveles):
+   if nodo.valor > 4 and niveles > 0:
       nodo.izq = Nodo(int(nodo.valor/2))
-      nodo.der = Nodo(int(nodo.valor/2))
-      generar_arbol_examen(nodo.izq)
-      generar_arbol_examen(nodo.der)
+      nodo.der = Nodo(int(nodo.valor/3))
+      generar_arbol_examen(nodo.izq, niveles-1)
+      generar_arbol_examen(nodo.der, niveles-1)
+
+def tirar_arbol(nodo, nivel=0, prefijo=""):
+   if nodo is not None:
+      tirar_arbol(nodo.der, nivel + 1, "   ")
+      print(prefijo * nivel + str(nodo.valor))
+      tirar_arbol(nodo.izq, nivel + 1, "   ")
 
 raiz_examen = Nodo(96)
-generar_arbol_examen(raiz_examen)
+generar_arbol_examen(raiz_examen, 4)
+tirar_arbol(raiz_examen)
+resultao_max = minimax_ingenuo(raiz_examen, 5, es_max=True)
+resultao_min = minimax_ingenuo(raiz_examen, 5, es_max=False)
+
+print(f"Minimax con raíz max: resultado {resultao_max['valor']}, costado {resultao_max['costado']}")
+print(f"Minimax con raíz min: resultado {resultao_min['valor']}, costado {resultao_min['costado']}")

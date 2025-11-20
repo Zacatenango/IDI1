@@ -1,6 +1,8 @@
 # created by virtualenv automatically
 bin/
+etc/
 lib/
 Include/
 Lib/
 Scripts/
+share/
