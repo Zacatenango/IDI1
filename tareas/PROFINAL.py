@@ -34,9 +34,11 @@ class EstadoDelJuego():
       
       # Armamos la cuadrícula
       self.cuadricula = [ [] for _ in range(self.dimension_Y) ]
+      # Valores de la cuadrícula: entre 1 y 2 * max(dimension_X, dimension_Y)
+      max_valor = 2 * max(self.dimension_X, self.dimension_Y)
       for una_fila in self.cuadricula:
          for X in range(self.dimension_X):
-            una_fila.append({ "valor": numpy.random.randint(0, 10), "ocupado_por": None })
+            una_fila.append({ "valor": numpy.random.randint(1, max_valor + 1), "ocupado_por": None })
       
       # Inicializar puntuaciones
       self.puntuacion_1 = 0
@@ -147,7 +149,8 @@ def _detectar_victoria(stdscr, estado_juego, colores):
                   color = colores["verde"]
                case _:
                   color = colores["blanco"]
-            stdscr.addstr(indice_Y+2, indice_X * 2, str(una_celda["valor"]), color)
+            # Cada celda ocupa 3 columnas: dos para el número (hasta 2 dígitos) y un espacio
+            stdscr.addstr(indice_Y+2, indice_X * 3, "{:2} ".format(una_celda['valor']), color)
       stdscr.refresh()
       tecla = stdscr.getch()
       if tecla == ord('q'):
@@ -180,7 +183,8 @@ def _renderizar_cuadricula(stdscr, estado_juego, colores):
                color = colores["verde"]
             case _:
                color = colores["blanco"]
-         stdscr.addstr(indice_Y+2, indice_X * 2, str(una_celda["valor"]), color)
+         # Cada celda ocupa 3 columnas para que quepan números de 2 dígitos
+         stdscr.addstr(indice_Y+2, indice_X * 3, "{:2} ".format(una_celda['valor']), color)
 
 
 def _procesar_WASD(tecla):
