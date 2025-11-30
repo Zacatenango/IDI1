@@ -22,51 +22,55 @@ numpy.random.seed(297974)
 
 class EstadoDelJuego():
    def __init__(self, dimension_X, dimension_Y):
+      # Generación de la cuadrícula
       self.dimension_X = dimension_X if dimension_X is not None else 6
       self.dimension_Y = dimension_Y if dimension_Y is not None else 6
+      
+      # Prueba de cordura: si la dimensión es 2 o menos, cortamos el programa
+      if self.dimension_X <= 2 or self.dimension_Y <= 2:
+         print("¡Error! El cuadro debe ser de al menos 3 x 3")
+         exit(1)
+      
+      # Armamos la cuadrícula
       self.cuadricula = [ [] for _ in range(self.dimension_Y) ]
       for una_fila in self.cuadricula:
          for X in range(self.dimension_X):
             una_fila.append({ "valor": numpy.random.randint(0, 10), "ocupado_por": None })
+      
+      # Inicializar puntuaciones
       self.puntuacion_1 = 0
       self.puntuacion_2 = 0
-      # Player 1 starts bottom-right, player 2 starts top-left
+
+      # Jugador 1 empieza en la esquina inferior derecha, 2 empieza en la esquina superior izquierda
       self.posicion_P2 = (0, 0)
       self.posicion_P1 = (self.dimension_Y - 1, self.dimension_X - 1)
       self.turno_P1 = True
 
-      # Claim initial positions
-      # If both start in same square (very small boards), only first player claims
-      if self.posicion_P2 == self.posicion_P1:
-         self.cuadricula[self.posicion_P1[0]][self.posicion_P1[1]]["ocupado_por"] = "P1"
-         self.puntuacion_1 += self.cuadricula[self.posicion_P1[0]][self.posicion_P1[1]]["valor"]
-      else:
-         self.cuadricula[self.posicion_P2[0]][self.posicion_P2[1]]["ocupado_por"] = "P2"
-         self.puntuacion_2 += self.cuadricula[self.posicion_P2[0]][self.posicion_P2[1]]["valor"]
-         self.cuadricula[self.posicion_P1[0]][self.posicion_P1[1]]["ocupado_por"] = "P1"
-         self.puntuacion_1 += self.cuadricula[self.posicion_P1[0]][self.posicion_P1[1]]["valor"]
+      # Marcamos la posición inicial
+      self.cuadricula[self.posicion_P2[0]][self.posicion_P2[1]]["ocupado_por"] = "P2"
+      self.puntuacion_2 += self.cuadricula[self.posicion_P2[0]][self.posicion_P2[1]]["valor"]
+      self.cuadricula[self.posicion_P1[0]][self.posicion_P1[1]]["ocupado_por"] = "P1"
+      self.puntuacion_1 += self.cuadricula[self.posicion_P1[0]][self.posicion_P1[1]]["valor"]
 
-   def _in_bounds(self, pos):
+   def _dentro_de_la_cuadricula(self, pos):
       y, x = pos
       return 0 <= y < self.dimension_Y and 0 <= x < self.dimension_X
 
-   def get_adjacent_positions(self, pos):
+   def posiciones_adyacentes(self, pos):
       y, x = pos
-      adjacents = [ (y-1, x), (y+1, x), (y, x-1), (y, x+1) ]
-      return [p for p in adjacents if self._in_bounds(p)]
+      adyacentes = [ (y-1, x), (y+1, x), (y, x-1), (y, x+1) ]
+      return [p for p in adyacentes if self._dentro_de_la_cuadricula(p)]
 
-   def get_valid_moves(self, pos):
-      # Valid moves are adjacent squares that are not occupied
-      return [p for p in self.get_adjacent_positions(pos)
-              if self.cuadricula[p[0]][p[1]]["ocupado_por"] is None]
+   def movimientos_validos(self, pos):
+      return [p for p in self.posiciones_adyacentes(pos) if self.cuadricula[p[0]][p[1]]["ocupado_por"] is None]
 
-   def claim(self, pos, player):
+   def tomar(self, pos, jugador):
       # Set the square's occupant and increase the player's score
       y, x = pos
       if self.cuadricula[y][x]["ocupado_por"] is not None:
          raise ValueError("Square already occupied")
-      self.cuadricula[y][x]["ocupado_por"] = player
-      if player == "P1":
+      self.cuadricula[y][x]["ocupado_por"] = jugador
+      if jugador == "P1":
          self.puntuacion_1 += self.cuadricula[y][x]["valor"]
          self.posicion_P1 = (y, x)
       else:
@@ -183,7 +187,7 @@ def main(stdscr):
       tecla = stdscr.getch()
       
       if tecla in (ord('w'), ord('a'), ord('s'), ord('d')):
-         # Determine move vector
+         # Determinar dirección de movimiento
          if tecla == ord('w'):
             delta = (-1, 0)
             dir_text = "arriba"
@@ -197,7 +201,7 @@ def main(stdscr):
             delta = (0, 1)
             dir_text = "derecha"
 
-         # Evaluate attempted move for the active player
+         # Evaluar el intento de juego
          if estado_juego.turno_P1:
             pos_actual = estado_juego.posicion_P1
             player_label = "P1"
@@ -206,15 +210,14 @@ def main(stdscr):
             player_label = "P2"
 
          nueva_pos = (pos_actual[0] + delta[0], pos_actual[1] + delta[1])
-         valid_moves = estado_juego.get_valid_moves(pos_actual)
+         valid_moves = estado_juego.movimientos_validos(pos_actual)
          if nueva_pos in valid_moves:
-            # Claim and change turn
-            estado_juego.claim(nueva_pos, player_label)
+            # Tomar y cambiar turno
+            estado_juego.tomar(nueva_pos, player_label)
             mensaje = f"{('Jugador 1' if player_label=='P1' else 'Jugador 2')} se movió {dir_text} y reclamó {estado_juego.cuadricula[nueva_pos[0]][nueva_pos[1]]['valor']} puntos"
-            # Toggle turn
             estado_juego.turno_P1 = not estado_juego.turno_P1
          else:
-            if not estado_juego._in_bounds(nueva_pos):
+            if not estado_juego._dentro_de_la_cuadricula(nueva_pos):
                mensaje = "Movimiento fuera de los límites"
             elif estado_juego.cuadricula[nueva_pos[0]][nueva_pos[1]]["ocupado_por"] is not None:
                mensaje = "Casilla ocupada, no puedes moverte ahí"
