@@ -78,7 +78,7 @@ class EstadoDelJuego():
          self.posicion_P2 = (y, x)
 
 
-def _inicializar():
+def _inicializar(stdscr):
    # Configuramos curses: terminal a color, el color #1 es amarillo sobre negro,
    # #2 es blanco sobre negro, #3 es rojo sobre negro
    curses.start_color()
@@ -113,8 +113,8 @@ def _inicializar():
 
 def _detectar_victoria(stdscr, estado_juego, colores):
    # Si alguno de los 2 jugadores no tiene un movimiento válido restante, fin del juego
-   valid_moves_P1 = estado_juego.get_valid_moves(estado_juego.posicion_P1)
-   valid_moves_P2 = estado_juego.get_valid_moves(estado_juego.posicion_P2)
+   valid_moves_P1 = estado_juego.movimientos_validos(estado_juego.posicion_P1)
+   valid_moves_P2 = estado_juego.movimientos_validos(estado_juego.posicion_P2)
    if len(valid_moves_P1) == 0 or len(valid_moves_P2) == 0:
       # Determine winner
       if estado_juego.puntuacion_1 > estado_juego.puntuacion_2:
@@ -151,9 +151,60 @@ def _detectar_victoria(stdscr, estado_juego, colores):
    stdscr.addstr(0, 0, f"Jugador 1: {estado_juego.puntuacion_1} puntos -- Jugador 2: {estado_juego.puntuacion_2} puntos    Turno: Jugador {turno_text}")
 
 
+def _mensaje_movimiento(stdscr, mensaje):
+   # Mostramos el mensaje de movimiento
+   if mensaje:
+      stdscr.addstr(1, 0, mensaje)
+   else:
+      stdscr.addstr(1, 0, "Controles: W/A/S/D moverse, r reiniciar, q salir")
+
+
+def _renderizar_cuadricula(stdscr, estado_juego, colores):
+   for indice_Y, una_fila in enumerate(estado_juego.cuadricula):
+      for indice_X, una_celda in enumerate(una_fila):
+         match una_celda["ocupado_por"]:
+            case "P1":
+               color = colores["amarillo"]
+            case "P2":
+               color = colores["verde"]
+            case _:
+               color = colores["blanco"]
+         stdscr.addstr(indice_Y+2, indice_X * 2, str(una_celda["valor"]), color)
+
+
+def _procesar_WASD(tecla):
+   if tecla == ord('w'):
+      delta = (-1, 0)
+      dir_text = "arriba"
+   elif tecla == ord('s'):
+      delta = (1, 0)
+      dir_text = "abajo"
+   elif tecla == ord('a'):
+      delta = (0, -1)
+      dir_text = "izquierda"
+   else:  # tecla == ord('d')
+      delta = (0, 1)
+      dir_text = "derecha"
+   
+   return delta, dir_text
+
+
+def _iniciar_jugada(estado_juego):
+   if estado_juego.turno_P1:
+      pos_actual = estado_juego.posicion_P1
+      etiqueta_jugador = "P1"
+   else:
+      pos_actual = estado_juego.posicion_P2
+      etiqueta_jugador = "P2"
+   nueva_pos = (pos_actual[0] + delta[0], pos_actual[1] + delta[1])
+   movimientos_validos = estado_juego.movimientos_validos(pos_actual)
+
+   return pos_actual, etiqueta_jugador, nueva_pos, movimientos_validos
+
+
 # Este proyecto usa la librería curses para implementar la interfaz de usuario
 def main(stdscr):
-   estado_juego, colores, mensaje = _inicializar()
+   estado_juego, colores, mensaje = _inicializar(stdscr)
    
    # Iniciamos el ciclo principal
    while True:
@@ -162,60 +213,29 @@ def main(stdscr):
       if accion == "romper": break
       elif accion == "continuar": continue
 
-      
-      
-      # Mostramos el mensaje de movimiento
-      if mensaje:
-         stdscr.addstr(1, 0, mensaje)
-      else:
-         stdscr.addstr(1, 0, "Controles: W/A/S/D moverse, r reiniciar, q salir")
-
-      for indice_Y, una_fila in enumerate(estado_juego.cuadricula):
-         for indice_X, una_celda in enumerate(una_fila):
-            match una_celda["ocupado_por"]:
-               case "P1":
-                  color = colores["amarillo"]
-               case "P2":
-                  color = colores["verde"]
-               case _:
-                  color = colores["blanco"]
-            stdscr.addstr(indice_Y+2, indice_X * 2, str(una_celda["valor"]), color)
-      
+      # Parte 2: renderizar
+      # Mantendremos los refresh() fuera de las funciones porque luego no sabemos dónde quedan
+      _mensaje_movimiento(stdscr, mensaje)
+      _renderizar_cuadricula(stdscr, estado_juego, colores)
       stdscr.refresh()
       
       # Recibir el teclazo
       tecla = stdscr.getch()
-      
+
+      # Procesar teclazo
       if tecla in (ord('w'), ord('a'), ord('s'), ord('d')):
-         # Determinar dirección de movimiento
-         if tecla == ord('w'):
-            delta = (-1, 0)
-            dir_text = "arriba"
-         elif tecla == ord('s'):
-            delta = (1, 0)
-            dir_text = "abajo"
-         elif tecla == ord('a'):
-            delta = (0, -1)
-            dir_text = "izquierda"
-         else:  # tecla == ord('d')
-            delta = (0, 1)
-            dir_text = "derecha"
-
-         # Evaluar el intento de juego
-         if estado_juego.turno_P1:
-            pos_actual = estado_juego.posicion_P1
-            player_label = "P1"
-         else:
-            pos_actual = estado_juego.posicion_P2
-            player_label = "P2"
-
-         nueva_pos = (pos_actual[0] + delta[0], pos_actual[1] + delta[1])
-         valid_moves = estado_juego.movimientos_validos(pos_actual)
-         if nueva_pos in valid_moves:
-            # Tomar y cambiar turno
-            estado_juego.tomar(nueva_pos, player_label)
-            mensaje = f"{('Jugador 1' if player_label=='P1' else 'Jugador 2')} se movió {dir_text} y reclamó {estado_juego.cuadricula[nueva_pos[0]][nueva_pos[1]]['valor']} puntos"
+         # Si picamos WASD, determinamos la dirección del movimiento
+         # Luego iniciamos la toma del número correspondiente a la dirección que jugó el jugador
+         delta, dir_text = _procesar_WASD(tecla)
+         pos_actual, etiqueta_jugador, nueva_pos, movimientos_validos = _iniciar_jugada(estado_juego)
+         
+         # Revisamos que nuestra nueva posición sea válida. Si lo es, la tomamos y cambiamos turno
+         if nueva_pos in movimientos_validos:
+            estado_juego.tomar(nueva_pos, etiqueta_jugador)
+            mensaje = f"{('Jugador 1' if etiqueta_jugador=='P1' else 'Jugador 2')} se movió {dir_text} y reclamó {estado_juego.cuadricula[nueva_pos[0]][nueva_pos[1]]['valor']} puntos"
             estado_juego.turno_P1 = not estado_juego.turno_P1
+         
+         # Si es inválida, mandamos un aviso
          else:
             if not estado_juego._dentro_de_la_cuadricula(nueva_pos):
                mensaje = "Movimiento fuera de los límites"
@@ -223,11 +243,15 @@ def main(stdscr):
                mensaje = "Casilla ocupada, no puedes moverte ahí"
             else:
                mensaje = "Movimiento inválido"
+      
+      # Teclas funcionales: Q sirve para salir
       elif tecla == ord("q"):
          break
+      # R reinicia el juego
       elif tecla == ord('r'):
          estado_juego = EstadoDelJuego(ARGUMENTOS["-x"], ARGUMENTOS["-y"])  # restart
          mensaje = ""
+      # No picamos nada en el intervalo del ciclo: no hacemos nada
       elif tecla == -1:  # No key pressed (timeout)
          mensaje = ""
       
