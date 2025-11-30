@@ -283,6 +283,88 @@ def minimax_armar_arbol(raiz, niveles, estado_juego, posicion_2, posicion_1, es_
          minimax_armar_arbol(hijo, niveles - 1, estado_juego, posicion_2, nueva_pos, not es_max, nuevos_visitados)
 
 
+def minimax_ingenuo(nodo, profundidad, es_max):
+   # Condición de salida: llegamos a la profundidad final o a una hoja
+   if profundidad == 1 or (nodo.izq is None and nodo.der is None):
+      return { "valor": nodo.valor, "nodo": nodo, "costado": None }
+   
+   # El nodo inicial es max: elegimos los hijos máximos
+   if es_max:
+      # Inicializamos nuestro valor máximo en una representación de Python del -infinito
+      valor_max = float("-inf")
+      mejor_hoja = None
+      mejor_costado = None
+
+      # Si hay nodo a la izquierda, llamamos recursivamente la función en ese nodo, con la 
+      # profundidad decrementada; y ponemos que es Min, porque el hijo de un Max es Min.
+      if nodo.izq is not None:
+         resultao = minimax_ingenuo(nodo.izq, profundidad-1, es_max=False)
+         # Terminando nuestra rama de recursividad, si nuestro valor es mayor que el 
+         # valor máximo, ponemos eso en las variables del resultado e indicamos que el mejor costado
+         # a seguir es el izquierdo
+         if resultao["valor"] > valor_max:
+            valor_max = resultao["valor"]
+            mejor_hoja = resultao["nodo"]
+            mejor_costado = "izquierdo"
+      
+      # Ahora, si hay nodo a la derecha, pasamos a revisarlo, igual con la profundidad decrementada
+      # Y hacemos lo mismo que con el nodo izquierdo pero indicando que es a la derecha.
+      if nodo.der is not None:
+         resultao = minimax_ingenuo(nodo.der, profundidad-1, es_max=False)
+         if resultao["valor"] > valor_max:
+            valor_max = resultao["valor"]
+            mejor_hoja = resultao["nodo"]
+            mejor_costado = "derecho"
+      
+      # Nuevo en el proyecto final: lo mismo pero hacia arriba y abajo
+      if nodo.top is not None:
+         resultao = minimax_ingenuo(nodo.top, profundidad-1, es_max=False)
+         if resultao["valor"] > valor_max:
+            valor_max = resultao["valor"]
+            mejor_hoja = resultao["nodo"]
+            mejor_costado = "arriba"
+
+      if nodo.bot is not None:
+         resultao = minimax_ingenuo(nodo.bot, profundidad-1, es_max=False)
+         if resultao["valor"] > valor_max:
+            valor_max = resultao["valor"]
+            mejor_hoja = resultao["nodo"]
+            mejor_costado = "abajo"
+      
+      # Terminada esta cadena de recursión, tiramos el resultado
+      return { "valor": valor_max, "nodo": mejor_hoja, "costado": mejor_costado }
+   
+   # Ahora, si el nodo es min, hacemos lo mismo pero buscando un valor mínimo
+   else:
+      valor_min = float("inf")
+      mejor_hoja = None
+      mejor_costado = None
+
+      if nodo.izq is not None:
+         resultao = minimax_ingenuo(nodo.izq, profundidad-1, es_max=True)
+         if resultao["valor"] < valor_min:
+            valor_min = resultao["valor"]
+            mejor_hoja = resultao["nodo"]
+            mejor_costado = "izquierdo"
+      if nodo.der is not None:
+         resultao = minimax_ingenuo(nodo.der, profundidad-1, es_max=True)
+         if resultao["valor"] < valor_min:
+            valor_min = resultao["valor"]
+            mejor_hoja = resultao["nodo"]
+            mejor_costado = "derecho"
+      if nodo.top is not None:
+         resultao = minimax_ingenuo(nodo.top, profundidad-1, es_max=True)
+         if resultao["valor"] < valor_min:
+            valor_min = resultao["valor"]
+            mejor_hoja = resultao["nodo"]
+            mejor_costado = "topuierdo"
+      if nodo.bot is not None:
+         resultao = minimax_ingenuo(nodo.bot, profundidad-1, es_max=True)
+         if resultao["valor"] < valor_min:
+            valor_min = resultao["valor"]
+            mejor_hoja = resultao["nodo"]
+            mejor_costado = "botecho"
+      return { "valor": valor_min, "nodo": mejor_hoja, "costado": mejor_costado }
 
 # Este proyecto usa la librería curses para implementar la interfaz de usuario
 def main(stdscr):
