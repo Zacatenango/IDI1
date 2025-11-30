@@ -366,6 +366,7 @@ def minimax_ingenuo(nodo, profundidad, es_max):
             mejor_costado = "botecho"
       return { "valor": valor_min, "nodo": mejor_hoja, "costado": mejor_costado }
 
+
 # Este proyecto usa la librería curses para implementar la interfaz de usuario
 def main(stdscr):
    estado_juego, colores, mensaje = _inicializar(stdscr)
