@@ -24,8 +24,8 @@ numpy.random.seed(297974)
 class EstadoDelJuego():
    def __init__(self, dimension_X, dimension_Y):
       # Generación de la cuadrícula
-      self.dimension_X = dimension_X if dimension_X is not None else 6
-      self.dimension_Y = dimension_Y if dimension_Y is not None else 6
+      self.dimension_X = int(dimension_X) if dimension_X is not None else 6
+      self.dimension_Y = int(dimension_Y) if dimension_Y is not None else 6
       
       # Prueba de cordura: si la dimensión es 2 o menos, cortamos el programa
       if self.dimension_X <= 2 or self.dimension_Y <= 2:
@@ -43,7 +43,6 @@ class EstadoDelJuego():
       # Inicializar puntuaciones
       self.puntuacion_1 = 0
       self.puntuacion_2 = 0
-      # Ensure dificultad is an int (docopt returns strings for values)
       self.dificultad = int(ARGUMENTOS.get("--dificultad")) if ARGUMENTOS.get("--dificultad") else 4
 
       # Jugador 1 empieza en la esquina inferior derecha, 2 empieza en la esquina superior izquierda
@@ -130,14 +129,14 @@ def _detectar_victoria(stdscr, estado_juego, colores):
    valid_moves_P1 = estado_juego.movimientos_validos(estado_juego.posicion_P1)
    valid_moves_P2 = estado_juego.movimientos_validos(estado_juego.posicion_P2)
    if len(valid_moves_P1) == 0 or len(valid_moves_P2) == 0:
-      # Determine winner
+      # Sacar el ganador
       if estado_juego.puntuacion_1 > estado_juego.puntuacion_2:
          mensaje = f"Juego terminado: Gana Jugador 1 ({estado_juego.puntuacion_1} - {estado_juego.puntuacion_2}). Presiona 'q' para salir o 'r' para reiniciar."
       elif estado_juego.puntuacion_2 > estado_juego.puntuacion_1:
          mensaje = f"Juego terminado: Gana Jugador 2 ({estado_juego.puntuacion_2} - {estado_juego.puntuacion_1}). Presiona 'q' para salir o 'r' para reiniciar."
       else:
          mensaje = f"Juego terminado: Empate ({estado_juego.puntuacion_1} - {estado_juego.puntuacion_2}). Presiona 'q' para salir o 'r' para reiniciar."
-      # Render final state and wait for quit/restart
+      # Renderizamos el estado final
       stdscr.clear()
       stdscr.addstr(0, 0, f"Jugador 1: {estado_juego.puntuacion_1} puntos -- Jugador 2: {estado_juego.puntuacion_2} puntos")
       stdscr.addstr(1, 0, mensaje)
@@ -167,7 +166,6 @@ def _detectar_victoria(stdscr, estado_juego, colores):
 
 
 def _mensaje_movimiento(stdscr, mensaje):
-   # Mostramos el mensaje de movimiento
    if mensaje:
       stdscr.addstr(1, 0, mensaje)
    else:
@@ -219,32 +217,16 @@ def _iniciar_jugada(estado_juego, delta):
 
 
 def minimax_armar_arbol(raiz, niveles, estado_juego, posicion_2, posicion_1, es_max=False, visitados=None):
-   """Arma recursivamente un árbol cuaternario que modela los movimientos
-   alternados de P2 (máximo) y P1 (mínimo).
-
-   - raiz: nodo actual (su .valor ya contiene la ventaja P2 - P1 hasta este punto)
-   - niveles: profundidad restante (0 = hoja)
-   - estado_juego: objeto EstadoDelJuego (para leer valores y dimensiones)
-   - posicion_2, posicion_1: posiciones actuales simuladas de P2 y P1
-   - es_max: True si en este nivel le toca mover a P2 (max), False si le toca a P1 (min)
-   - visitados: conjunto de posiciones ya tomadas en la simulación
-
-   La función nunca modifica el estado real del juego; en su lugar utiliza
-   `visitados` para evitar moverse a casillas ya reclamadas en la simulación.
-   """
    if niveles <= 0:
       return
 
    # Inicializar visitados con las posiciones actuales si no se pasaron
    if visitados is None:
-      # Start visitados with all already-occupied cells in the real board so
-      # we never consider taking an occupied square during simulation.
       visitados = set()
       for yy, fila in enumerate(estado_juego.cuadricula):
          for xx, celda in enumerate(fila):
             if celda.get("ocupado_por") is not None:
                visitados.add((yy, xx))
-      # Also ensure current simulated positions are included
       visitados.add(posicion_2)
       visitados.add(posicion_1)
 
@@ -272,7 +254,7 @@ def minimax_armar_arbol(raiz, niveles, estado_juego, posicion_2, posicion_1, es_
          continue
       y, x = nueva_pos
       if estado_juego.cuadricula[y][x]["ocupado_por"] is not None:
-         # ya está ocupada por algun jugador en el estado real; no es candidata
+         # Ya está ocupada por algun jugador en el estado real; no es candidata
          continue
 
       valor_celda = estado_juego.cuadricula[y][x]["valor"]
@@ -283,10 +265,10 @@ def minimax_armar_arbol(raiz, niveles, estado_juego, posicion_2, posicion_1, es_
       else:       # P1 mueve -> disminuye la ventaja
          hijo = ArbolCuaternario(raiz.valor - valor_celda)
 
-      # enlazamos el hijo al nombre correcto
+      # Enlazamos el hijo al nombre correcto
       setattr(raiz, nombre, hijo)
 
-      # preparamos el conjunto de visitados para la recursión
+      # Preparamos el conjunto de visitados para la recursión
       nuevos_visitados = set(visitados)
       nuevos_visitados.add(nueva_pos)
 
