@@ -213,70 +213,74 @@ def _iniciar_jugada(estado_juego, delta):
    return pos_actual, etiqueta_jugador, nueva_pos, movimientos_validos
 
 
-def minimax_armar_arbol(raiz, niveles, estado_juego, posicion_2, posicion_1, es_max=False):
-   if niveles > 0:
-      # Primero encontramos los movimientos válidos
-      # Nos auxiliamos para eso de la función de recibir un teclazo
-      delta_top, dir_text_top = _procesar_WASD(ord('w'))
-      delta_izq, dir_text_izq = _procesar_WASD(ord('a'))
-      delta_bot, dir_text_bot = _procesar_WASD(ord('s'))
-      delta_der, dir_text_der = _procesar_WASD(ord('d'))
-      pos_actual = posicion_2  # copio el parámetro para corregir un error
-      nueva_pos_top = (pos_actual[0]+delta_top[0], pos_actual[1]+delta_top[1])
-      nueva_pos_bot = (pos_actual[0]+delta_bot[0], pos_actual[1]+delta_bot[1])
-      nueva_pos_izq = (pos_actual[0]+delta_izq[0], pos_actual[1]+delta_izq[1])
-      nueva_pos_der = (pos_actual[0]+delta_der[0], pos_actual[1]+delta_der[1])
+def minimax_armar_arbol(raiz, niveles, estado_juego, posicion_2, posicion_1, es_max=False, visitados=None):
+   """Arma recursivamente un árbol cuaternario que modela los movimientos
+   alternados de P2 (máximo) y P1 (mínimo).
 
-      # Sacamos los movimientos válidos del jugador 2
-      # (esta función ya toma en cuenta movimientos que deben estar dentro de la cuadrícula)
-      movimientos_validos_P2 = estado_juego.movimientos_validos(estado_juego.posicion_P2)
+   - raiz: nodo actual (su .valor ya contiene la ventaja P2 - P1 hasta este punto)
+   - niveles: profundidad restante (0 = hoja)
+   - estado_juego: objeto EstadoDelJuego (para leer valores y dimensiones)
+   - posicion_2, posicion_1: posiciones actuales simuladas de P2 y P1
+   - es_max: True si en este nivel le toca mover a P2 (max), False si le toca a P1 (min)
+   - visitados: conjunto de posiciones ya tomadas en la simulación
 
-      # Ahora lo mismo pero para el jugador 1
-      delta_top, dir_text_top = _procesar_WASD(ord('w'))
-      delta_izq, dir_text_izq = _procesar_WASD(ord('a'))
-      delta_bot, dir_text_bot = _procesar_WASD(ord('s'))
-      delta_der, dir_text_der = _procesar_WASD(ord('d'))
+   La función nunca modifica el estado real del juego; en su lugar utiliza
+   `visitados` para evitar moverse a casillas ya reclamadas en la simulación.
+   """
+   if niveles <= 0:
+      return
+
+   # Inicializar visitados con las posiciones actuales si no se pasaron
+   if visitados is None:
+      visitados = set()
+      visitados.add(posicion_2)
+      visitados.add(posicion_1)
+
+   # Determinar de quién es el turno en este nodo: True -> P2 (max), False -> P1 (min)
+   if es_max:
+      jugador_turno = "P2"
+      pos_actual = posicion_2
+   else:
+      jugador_turno = "P1"
       pos_actual = posicion_1
-      nueva_pos_top = (pos_actual[0]+delta_top[0], pos_actual[1]+delta_top[1])
-      nueva_pos_bot = (pos_actual[0]+delta_bot[0], pos_actual[1]+delta_bot[1])
-      nueva_pos_izq = (pos_actual[0]+delta_izq[0], pos_actual[1]+delta_izq[1])
-      nueva_pos_der = (pos_actual[0]+delta_der[0], pos_actual[1]+delta_der[1])
-      movimientos_validos_P2 = estado_juego.movimientos_validos(estado_juego.posicion_P1)
 
-      # Creamos un nuevo nodo por cada movimiento válido
-      # Si soy max, lo creo con la puntuación sumada y mi movimiento
-      # Si soy min, lo creo con la puntuación restada y el movimiento del humano
-      if nueva_pos_top in movimientos_validos_P2:
-         y, x = nueva_pos_top
-         if es_max:
-            raiz.top = ArbolCuaternario(raiz.valor + estado_juego.cuadricula[y][x]["valor"])
-         else:
-            raiz.top = ArbolCuaternario(raiz.valor - estado_juego.cuadricula[y][x]["valor"])
-         minimax_armar_arbol(raiz.top, niveles-1, estado_juego, nueva_pos_top, not es_max)
-      
-      if nueva_pos_bot in movimientos_validos_P2:
-         y, x = nueva_pos_bot
-         if es_max:
-            raiz.bot = ArbolCuaternario(raiz.valor + estado_juego.cuadricula[y][x]["valor"])
-         else:
-            raiz.bot = ArbolCuaternario(raiz.valor - estado_juego.cuadricula[y][x]["valor"])
-         minimax_armar_arbol(raiz.bot, niveles-1, estado_juego, nueva_pos_bot, not es_max)
-      
-      if nueva_pos_izq in movimientos_validos_P2:
-         y, x = nueva_pos_izq
-         if es_max:
-            raiz.izq = ArbolCuaternario(raiz.valor + estado_juego.cuadricula[y][x]["valor"])
-         else:
-            raiz.izq = ArbolCuaternario(raiz.valor - estado_juego.cuadricula[y][x]["valor"])
-         minimax_armar_arbol(raiz.izq, niveles-1, estado_juego, nueva_pos_izq, not es_max)
-      
-      if nueva_pos_der in movimientos_validos_P2:
-         y, x = nueva_pos_der
-         if es_max:
-            raiz.der = ArbolCuaternario(raiz.valor + estado_juego.cuadricula[y][x]["valor"])
-         else:
-            raiz.der = ArbolCuaternario(raiz.valor - estado_juego.cuadricula[y][x]["valor"])
-         minimax_armar_arbol(raiz.der, niveles-1, estado_juego, nueva_pos_der, not es_max)
+   # Direcciones en el orden esperado: arriba, abajo, izquierda, derecha
+   direcciones = [(-1, 0, "top"), (1, 0, "bot"), (0, -1, "izq"), (0, 1, "der")]
+
+   for dy, dx, nombre in direcciones:
+      nueva_pos = (pos_actual[0] + dy, pos_actual[1] + dx)
+
+      # Debe estar dentro de la cuadrícula
+      if not estado_juego._dentro_de_la_cuadricula(nueva_pos):
+         continue
+
+      # No podemos tomar una casilla ya visitada en la simulación
+      if nueva_pos in visitados:
+         continue
+
+      y, x = nueva_pos
+      valor_celda = estado_juego.cuadricula[y][x]["valor"]
+
+      # El efecto sobre la ventaja depende de quién se mueve en esta rama
+      if es_max:  # P2 mueve -> aumenta la ventaja P2 - P1
+         hijo = ArbolCuaternario(raiz.valor + valor_celda)
+      else:       # P1 mueve -> disminuye la ventaja
+         hijo = ArbolCuaternario(raiz.valor - valor_celda)
+
+      # enlazamos el hijo al nombre correcto
+      setattr(raiz, nombre, hijo)
+
+      # preparamos el conjunto de visitados para la recursión
+      nuevos_visitados = set(visitados)
+      nuevos_visitados.add(nueva_pos)
+
+      # Actualizamos las posiciones simuladas según quién se movió y recursamos
+      if es_max:
+         # P2 se movió a nueva_pos
+         minimax_armar_arbol(hijo, niveles - 1, estado_juego, nueva_pos, posicion_1, not es_max, nuevos_visitados)
+      else:
+         # P1 se movió a nueva_pos
+         minimax_armar_arbol(hijo, niveles - 1, estado_juego, posicion_2, nueva_pos, not es_max, nuevos_visitados)
 
 
 
@@ -316,11 +320,11 @@ def main(stdscr):
             ######### Algoritmo Minimax #########
             # Calculamos el movimiento del siguiente jugador
             # Para eso, comenzamos armando nuestro árbol. Lo inicializamos con la resta de
-            # puntuación 2 - puntuación 1. Nuestra CPU, entonces, inicia en Max y tiene que
-            # sacar el costado del árbol que, según sus cálculos, maximice sus posibilidades de
-            # ganar.
+            # puntuación 2 - puntuación 1. Nuestra CPU, entonces, inicia en Min porque tiene enfrente
+            # el movimiento del jugador 1 que quiere minimizar la ventaja de la CPU.
             raiz_arbol_decision = ArbolCuaternario(estado_juego.puntuacion_2 - estado_juego.puntuacion_1)
-            minimax_armar_arbol(raiz_arbol_decision, estado_juego.dificultad, estado_juego, estado_juego.posicion_P2, es_max=True)
+            # La siguiente jugada la hace P2 (la CPU) — marcamos es_max=True
+            minimax_armar_arbol(raiz_arbol_decision, estado_juego.dificultad, estado_juego, estado_juego.posicion_P2, estado_juego.posicion_P1, es_max=True)
 
          
          # Si es inválida, mandamos un aviso
