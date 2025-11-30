@@ -74,8 +74,7 @@ class EstadoDelJuego():
          self.posicion_P2 = (y, x)
 
 
-# Este proyecto usa la librería curses para implementar la interfaz de usuario
-def main(stdscr):
+def _inicializar():
    # Configuramos curses: terminal a color, el color #1 es amarillo sobre negro,
    # #2 es blanco sobre negro, #3 es rojo sobre negro
    curses.start_color()
@@ -104,46 +103,62 @@ def main(stdscr):
    stdscr.timeout(100)  # 100ms timeout for getch()
 
    mensaje = ""
+
+   return (estado_juego, colores, mensaje)
+
+
+def _detectar_victoria(stdscr, estado_juego, colores):
+   # Si alguno de los 2 jugadores no tiene un movimiento válido restante, fin del juego
+   valid_moves_P1 = estado_juego.get_valid_moves(estado_juego.posicion_P1)
+   valid_moves_P2 = estado_juego.get_valid_moves(estado_juego.posicion_P2)
+   if len(valid_moves_P1) == 0 or len(valid_moves_P2) == 0:
+      # Determine winner
+      if estado_juego.puntuacion_1 > estado_juego.puntuacion_2:
+         mensaje = f"Juego terminado: Gana Jugador 1 ({estado_juego.puntuacion_1} - {estado_juego.puntuacion_2}). Presiona 'q' para salir o 'r' para reiniciar."
+      elif estado_juego.puntuacion_2 > estado_juego.puntuacion_1:
+         mensaje = f"Juego terminado: Gana Jugador 2 ({estado_juego.puntuacion_2} - {estado_juego.puntuacion_1}). Presiona 'q' para salir o 'r' para reiniciar."
+      else:
+         mensaje = f"Juego terminado: Empate ({estado_juego.puntuacion_1} - {estado_juego.puntuacion_2}). Presiona 'q' para salir o 'r' para reiniciar."
+      # Render final state and wait for quit/restart
+      stdscr.clear()
+      stdscr.addstr(0, 0, f"Jugador 1: {estado_juego.puntuacion_1} puntos -- Jugador 2: {estado_juego.puntuacion_2} puntos")
+      stdscr.addstr(1, 0, mensaje)
+      for indice_Y, una_fila in enumerate(estado_juego.cuadricula):
+         for indice_X, una_celda in enumerate(una_fila):
+            match una_celda["ocupado_por"]:
+               case "P1":
+                  color = colores["amarillo"]
+               case "P2":
+                  color = colores["verde"]
+               case _:
+                  color = colores["blanco"]
+            stdscr.addstr(indice_Y+2, indice_X * 2, str(una_celda["valor"]), color)
+      stdscr.refresh()
+      tecla = stdscr.getch()
+      if tecla == ord('q'):
+         return "romper"
+      elif tecla == ord('r'):
+         estado_juego = EstadoDelJuego(ARGUMENTOS["-x"], ARGUMENTOS["-y"])  # restart
+         mensaje = ""
+         return "continuar"
+   # Renderizamos la cuadrícula
+   stdscr.clear()
+   turno_text = "1" if estado_juego.turno_P1 else "2"
+   stdscr.addstr(0, 0, f"Jugador 1: {estado_juego.puntuacion_1} puntos -- Jugador 2: {estado_juego.puntuacion_2} puntos    Turno: Jugador {turno_text}")
+
+
+# Este proyecto usa la librería curses para implementar la interfaz de usuario
+def main(stdscr):
+   estado_juego, colores, mensaje = _inicializar()
    
    # Iniciamos el ciclo principal
    while True:
-      # If either player has no valid moves, end the game
-      valid_moves_P1 = estado_juego.get_valid_moves(estado_juego.posicion_P1)
-      valid_moves_P2 = estado_juego.get_valid_moves(estado_juego.posicion_P2)
-      if len(valid_moves_P1) == 0 or len(valid_moves_P2) == 0:
-         # Determine winner
-         if estado_juego.puntuacion_1 > estado_juego.puntuacion_2:
-            mensaje = f"Juego terminado: Gana Jugador 1 ({estado_juego.puntuacion_1} - {estado_juego.puntuacion_2}). Presiona 'q' para salir o 'r' para reiniciar."
-         elif estado_juego.puntuacion_2 > estado_juego.puntuacion_1:
-            mensaje = f"Juego terminado: Gana Jugador 2 ({estado_juego.puntuacion_2} - {estado_juego.puntuacion_1}). Presiona 'q' para salir o 'r' para reiniciar."
-         else:
-            mensaje = f"Juego terminado: Empate ({estado_juego.puntuacion_1} - {estado_juego.puntuacion_2}). Presiona 'q' para salir o 'r' para reiniciar."
-         # Render final state and wait for quit/restart
-         stdscr.clear()
-         stdscr.addstr(0, 0, f"Jugador 1: {estado_juego.puntuacion_1} puntos -- Jugador 2: {estado_juego.puntuacion_2} puntos")
-         stdscr.addstr(1, 0, mensaje)
-         for indice_Y, una_fila in enumerate(estado_juego.cuadricula):
-            for indice_X, una_celda in enumerate(una_fila):
-               match una_celda["ocupado_por"]:
-                  case "P1":
-                     color = colores["amarillo"]
-                  case "P2":
-                     color = colores["verde"]
-                  case _:
-                     color = colores["blanco"]
-               stdscr.addstr(indice_Y+2, indice_X * 2, str(una_celda["valor"]), color)
-         stdscr.refresh()
-         tecla = stdscr.getch()
-         if tecla == ord('q'):
-            break
-         elif tecla == ord('r'):
-            estado_juego = EstadoDelJuego(ARGUMENTOS["-x"], ARGUMENTOS["-y"])  # restart
-            mensaje = ""
-            continue
-      # Renderizamos la cuadrícula
-      stdscr.clear()
-      turno_text = "1" if estado_juego.turno_P1 else "2"
-      stdscr.addstr(0, 0, f"Jugador 1: {estado_juego.puntuacion_1} puntos -- Jugador 2: {estado_juego.puntuacion_2} puntos    Turno: Jugador {turno_text}")
+      # Parte 1: detectar el ganador
+      accion = _detectar_victoria(stdscr, estado_juego, colores)
+      if accion == "romper": break
+      elif accion == "continuar": continue
+
+      
       
       # Mostramos el mensaje de movimiento
       if mensaje:
