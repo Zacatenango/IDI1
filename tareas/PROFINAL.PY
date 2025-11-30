@@ -285,7 +285,8 @@ def minimax_armar_arbol(raiz, niveles, estado_juego, posicion_2, posicion_1, es_
 
 def minimax_ingenuo(nodo, profundidad, es_max):
    # Condición de salida: llegamos a la profundidad final o a una hoja
-   if profundidad == 1 or (nodo.izq is None and nodo.der is None):
+   # Si profundidad <= 1 devolvemos el valor del nodo; también si no tiene hijos.
+   if profundidad <= 1 or (nodo.izq is None and nodo.der is None and nodo.top is None and nodo.bot is None):
       return { "valor": nodo.valor, "nodo": nodo, "costado": None }
    
    # El nodo inicial es max: elegimos los hijos máximos
@@ -357,13 +358,13 @@ def minimax_ingenuo(nodo, profundidad, es_max):
          if resultao["valor"] < valor_min:
             valor_min = resultao["valor"]
             mejor_hoja = resultao["nodo"]
-            mejor_costado = "topuierdo"
+            mejor_costado = "arriba"
       if nodo.bot is not None:
          resultao = minimax_ingenuo(nodo.bot, profundidad-1, es_max=True)
          if resultao["valor"] < valor_min:
             valor_min = resultao["valor"]
             mejor_hoja = resultao["nodo"]
-            mejor_costado = "botecho"
+            mejor_costado = "abajo"
       return { "valor": valor_min, "nodo": mejor_hoja, "costado": mejor_costado }
 
 
