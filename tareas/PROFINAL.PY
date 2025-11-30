@@ -402,13 +402,39 @@ def main(stdscr):
             estado_juego.turno_P1 = not estado_juego.turno_P1
 
             ######### Algoritmo Minimax #########
-            # Calculamos el movimiento del siguiente jugador
+            # Calculamos el movimiento del jugador 2
             # Para eso, comenzamos armando nuestro árbol. Lo inicializamos con la resta de
             # puntuación 2 - puntuación 1. Nuestra CPU, entonces, inicia en Min porque tiene enfrente
             # el movimiento del jugador 1 que quiere minimizar la ventaja de la CPU.
             raiz_arbol_decision = ArbolCuaternario(estado_juego.puntuacion_2 - estado_juego.puntuacion_1)
             # La siguiente jugada la hace P2 (la CPU) — marcamos es_max=True
             minimax_armar_arbol(raiz_arbol_decision, estado_juego.dificultad, estado_juego, estado_juego.posicion_P2, estado_juego.posicion_P1, es_max=True)
+
+            # Ahora evaluamos el árbol con minimax y ejecutamos la mejor jugada encontrada
+            decision = minimax_ingenuo(raiz_arbol_decision, estado_juego.dificultad, es_max=True)
+
+            # Si minimax no encontró una rama válida (por ejemplo CPU sin movimientos), saltamos
+            if decision and decision.get("costado") is not None:
+               costado = decision["costado"]
+               # mapa costado -> delta de movimiento
+               movimiento_map = {
+                  "arriba": (-1, 0),
+                  "abajo": (1, 0),
+                  "izquierdo": (0, -1),
+                  "derecho": (0, 1)
+               }
+               dy, dx = movimiento_map.get(costado, (0, 0))
+               nueva_pos_cpu = (estado_juego.posicion_P2[0] + dy, estado_juego.posicion_P2[1] + dx)
+
+               # A modo de seguridad verificamos que el movimiento sea válido antes de tomar
+               if nueva_pos_cpu in estado_juego.movimientos_validos(estado_juego.posicion_P2):
+                  estado_juego.tomar(nueva_pos_cpu, "P2")
+                  mensaje = f"Jugador 2 (CPU) se movió {costado} y reclamó {estado_juego.cuadricula[nueva_pos_cpu[0]][nueva_pos_cpu[1]]['valor']} puntos"
+                  # Cambiar turno de vuelta al jugador humano
+                  estado_juego.turno_P1 = not estado_juego.turno_P1
+               else:
+                  # Si, por alguna razón, la casilla resultó inválida (coincidencia con visitados u otra), avisamos
+                  mensaje = "CPU no pudo encontrar un movimiento válido"
 
          
          # Si es inválida, mandamos un aviso
