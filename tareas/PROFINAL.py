@@ -43,7 +43,8 @@ class EstadoDelJuego():
       # Inicializar puntuaciones
       self.puntuacion_1 = 0
       self.puntuacion_2 = 0
-      self.dificultad = ARGUMENTOS.get("--dificultad") or 4
+      # Ensure dificultad is an int (docopt returns strings for values)
+      self.dificultad = int(ARGUMENTOS.get("--dificultad")) if ARGUMENTOS.get("--dificultad") else 4
 
       # Jugador 1 empieza en la esquina inferior derecha, 2 empieza en la esquina superior izquierda
       self.posicion_P2 = (0, 0)
@@ -236,7 +237,14 @@ def minimax_armar_arbol(raiz, niveles, estado_juego, posicion_2, posicion_1, es_
 
    # Inicializar visitados con las posiciones actuales si no se pasaron
    if visitados is None:
+      # Start visitados with all already-occupied cells in the real board so
+      # we never consider taking an occupied square during simulation.
       visitados = set()
+      for yy, fila in enumerate(estado_juego.cuadricula):
+         for xx, celda in enumerate(fila):
+            if celda.get("ocupado_por") is not None:
+               visitados.add((yy, xx))
+      # Also ensure current simulated positions are included
       visitados.add(posicion_2)
       visitados.add(posicion_1)
 
@@ -258,11 +266,15 @@ def minimax_armar_arbol(raiz, niveles, estado_juego, posicion_2, posicion_1, es_
       if not estado_juego._dentro_de_la_cuadricula(nueva_pos):
          continue
 
-      # No podemos tomar una casilla ya visitada en la simulación
+      # Si la casilla está ocupada en el estado real del juego o ya fue tomada
+      # en esta simulación, la ignoramos.
       if nueva_pos in visitados:
          continue
-
       y, x = nueva_pos
+      if estado_juego.cuadricula[y][x]["ocupado_por"] is not None:
+         # ya está ocupada por algun jugador en el estado real; no es candidata
+         continue
+
       valor_celda = estado_juego.cuadricula[y][x]["valor"]
 
       # El efecto sobre la ventaja depende de quién se mueve en esta rama
